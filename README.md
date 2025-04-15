@@ -38,7 +38,7 @@ Make sure you have these things installed on your computer:
 
 ```sh
 # Get the code
-git clone https://github.com/yourusername/sqr-ai-news.git
+git clone https://github.com/SergePolin/sqr-ai-news
 cd sqr-ai-news
 ```
 
