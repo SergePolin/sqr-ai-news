@@ -1,0 +1,127 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI-Powered News Aggregator Project Guidelines
+
+## Project Overview
+
+The AI-Powered News Aggregator is a service that fetches news from multiple sources using a news API. It allows users to authenticate, customize topics, and save favorite articles for later reading.
+
+### Core Features
+
+- **User Authentication**: Login/signup functionality using Firebase Auth
+- **News Fetching**: Retrieval of articles from NewsAPI
+- **Search Functionality**: Keyword-based search for articles
+- **Category Filtering**: Filter articles by categories (sports, tech, politics, etc.)
+- **Bookmarking**: Save favorite articles for later reading
+
+### Feature Requirements
+
+- Minimum of three major interconnected features must be implemented
+- Each team member must implement at least one separate functionality
+- Features must use at least one external API (e.g., authentication, news API, etc.)
+- A simple UI must be implemented to enable automated testing with Selenium
+
+### Feature Interconnections
+
+- User authentication manages login and links users to their saved bookmarks
+- News fetching retrieves articles, which are then filtered by category
+- Search functionality applies keyword queries to the fetched news
+
+## Quality Requirements
+
+### Code Quality
+
+- **Formatting & Style**:
+  - Adhere to Flake8 standards with zero warnings
+  - Use consistent code formatting throughout the project
+  - Follow PEP 8 guidelines for Python code
+
+- **Complexity**:
+  - Maintain cyclomatic complexity ≤ 10 (measured via SonarQube)
+  - Keep functions and methods focused on a single responsibility
+  - Use meaningful variable and function names
+
+### Testing
+
+- **Coverage**:
+  - Minimum 60% test coverage required (measured via pytest-cov/coverage)
+  - Unit tests for all business logic
+  - Integration tests for API endpoints
+  - End-to-end tests for critical user flows
+  - UI tests using Selenium
+
+### Security
+
+- **Authentication & Privacy**:
+  - Properly secure all user data
+  - Implement proper authentication checks
+  - Follow best practices for password storage and management
+
+- **Vulnerability Management**:
+  - Zero high and critical vulnerabilities (measured via Bandit and/or Snyk)
+  - Regular dependency updates
+  - No use of deprecated or insecure libraries
+
+### Performance
+
+- **API Response Time**:
+  - Maximum response time ≤ 200ms (measured via Locust, k6 or JMeter)
+  - Optimize database queries
+  - Implement caching where appropriate
+
+## Documentation
+
+- All public interfaces must be documented
+- API endpoints should include:
+  - HTTP method
+  - URL path
+  - Request parameters
+  - Response format
+  - Authentication requirements
+  - Example requests and responses
+
+## Technical Stack
+
+- **Python 3.11**: Programming language
+- **Poetry**: For managing environment and dependencies
+- **FastAPI**: For implementing REST API
+- **OpenAPI**: For auto-generating API documentation
+- **SQLite**: For data storage
+- **Streamlit**: For frontend UI
+- **GitHub**: For repository hosting and CI/CD
+
+## Development Workflow
+
+### Version Control
+
+- Use feature branches for all changes
+- Pull requests require at least one reviewer
+- Commit messages should be descriptive and follow conventional commit format
+
+### CI/CD
+
+- All pull requests must pass:
+  - Flake8/Ruff linting
+  - Bandit security checks
+  - Unit and integration tests
+  - SonarQube quality gate (if available)
+
+### Environment Configuration
+
+- Use environment variables for configuration
+- Never commit sensitive information to version control
+- Document all required environment variables
+
+## Evaluation Criteria (15 points)
+
+| Criteria | Points | Description |
+|----------|--------|-------------|
+| Quality Gate Automation | 3 | Level of automation in quality gates |
+| Code Coverage | 3 | Achieving and exceeding the 60% minimum coverage |
+| Testing Method Diversity | 3 | Variety of testing methods implemented |
+| Reliability Mechanisms | 2 | Implementation of recovery and reliability features |
+| UI & Exploratory Testing | 2 | Quality of UI tests and exploratory testing |
+| Performance Testing | 2 | Thoroughness of load testing and performance optimization | 

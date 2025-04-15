@@ -1,0 +1,119 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Quality Metrics Requirements
+
+This document outlines the specific metrics and thresholds that the AI-Powered News Aggregator project must meet to be considered production-ready.
+
+## Code Quality Metrics
+
+### Static Analysis
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Style Compliance | Flake8/Ruff | 0 warnings | Code must follow PEP 8 style guide |
+| Cyclomatic Complexity | SonarQube | ≤ 10 per function | Measures code complexity |
+| Code Duplication | SonarQube | < 5% | Percentage of duplicated code |
+| Code Smells | SonarQube | < 20 per 1000 lines | Potential problems in code |
+
+### Testing
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Line Coverage | pytest-cov/coverage | ≥ 60% (minimum) | Percentage of code lines executed by tests |
+| Branch Coverage | pytest-cov/coverage | ≥ 60% | Percentage of code branches executed by tests |
+| Test Success Rate | pytest | 100% | All tests must pass |
+| Mutation Score | mutmut | ≥ 60% | Percentage of bugs detected by tests |
+| Fuzz Testing | hypothesis | Configurable | Property-based testing for edge cases |
+
+## Performance Metrics
+
+### API Performance
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Response Time | Locust/k6/JMeter | ≤ 200ms (p95) | 95% of requests complete within 200ms |
+| Throughput | Locust/k6/JMeter | ≥ 100 req/sec | Minimum requests per second |
+| Error Rate | Locust/k6/JMeter | < 0.1% | Percentage of failed requests |
+| Time to First Byte | Locust/k6/JMeter | < 50ms | Time until first byte received |
+
+### Database Performance
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Query Time | SQLAlchemy Stats | < 50ms (p95) | 95% of database queries complete within 50ms |
+| Connection Pool Usage | SQLAlchemy Stats | < 80% | Percentage of connection pool in use |
+
+## Security Metrics
+
+### Vulnerability Management
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Critical Vulnerabilities | Bandit/OWASP Dependency-Check/Snyk | 0 | Number of critical security vulnerabilities |
+| High Vulnerabilities | Bandit/OWASP Dependency-Check/Snyk | 0 | Number of high security vulnerabilities |
+| Medium Vulnerabilities | Bandit/OWASP Dependency-Check/Snyk | < 5 | Number of medium security vulnerabilities |
+| Dependency Freshness | pip-audit | < 3 months | Maximum age of dependencies |
+
+### Security Tests
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| OWASP Top 10 Coverage | OWASP ZAP | 100% | Tests covering all OWASP Top 10 risks |
+| Security Test Coverage | Custom | ≥ 90% | Percentage of security requirements tested |
+| Sensitive Data Exposure | Custom | 0 occurrences | No exposure of sensitive data |
+| Authentication Tests | Selenium/pytest | 100% pass | All authentication flows tested |
+
+## Reliability Metrics
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| Uptime | Monitoring | ≥ 99.9% | Percentage of time service is available |
+| Mean Time Between Failures | Monitoring | ≥ 720 hours | Average time between system failures |
+| Mean Time To Recovery | Monitoring | ≤ 15 minutes | Average time to recover from failures |
+| Recovery Tests | Custom | 100% pass | All recovery mechanisms tested |
+
+## Documentation Metrics
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| API Documentation Coverage | OpenAPI | 100% | Percentage of API endpoints documented |
+| Code Documentation Coverage | pylint | ≥ 80% | Percentage of public functions documented |
+| README Quality | Custom | ≥ 90% | Coverage of setup, usage, and contribution guidelines |
+| UI Flow Documentation | Custom | 100% | All UI flows documented for testing |
+
+## UI Testing Metrics
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| UI Test Coverage | Selenium | ≥ 80% | Percentage of UI elements tested |
+| Browser Compatibility | Selenium | All supported | Tests pass on all supported browsers |
+| Responsive Design | Custom | All breakpoints | UI works at all defined breakpoints |
+
+## External API Integration Metrics
+
+| Metric | Tool | Threshold | Description |
+|--------|------|-----------|-------------|
+| API Availability | Custom | ≥ 99% | External API availability tracking |
+| API Response Time | Custom | ≤ 500ms | External API response time monitoring |
+| Fallback Coverage | pytest | 100% | All fallback mechanisms for API failures tested |
+
+## Measuring and Reporting
+
+- Quality metrics should be measured in CI/CD pipeline through GitHub Actions
+- Quality reports should be generated after each build
+- Trend analysis should be performed weekly
+- Quality gates must be passed before deployment to production
+
+## Evaluation Criteria (15 points)
+
+| Criteria | Points | Description |
+|----------|--------|-------------|
+| Quality Gate Automation | 3 | Level of automation in quality gates |
+| Code Coverage | 3 | Achieving and exceeding the 60% minimum coverage |
+| Testing Method Diversity | 3 | Variety of testing methods implemented |
+| Reliability Mechanisms | 2 | Implementation of recovery and reliability features |
+| UI & Exploratory Testing | 2 | Quality of UI tests and exploratory testing |
+| Performance Testing | 2 | Thoroughness of load testing and performance optimization | 

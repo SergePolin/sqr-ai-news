@@ -1,0 +1,142 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Technical Implementation Requirements
+
+## Architecture
+
+The AI-Powered News Aggregator should follow a clean architecture pattern with clear separation of concerns:
+
+- **API Layer**: FastAPI endpoints that handle HTTP requests and responses
+- **Service Layer**: Business logic that processes data and manages operations
+- **Data Access Layer**: Database interactions via SQLAlchemy ORM
+- **External Services Layer**: Integration with NewsAPI, Firebase Auth, etc.
+
+## Core Requirements
+
+- Minimum of three major interconnected features
+- Each team member must implement at least one separate functionality
+- **Mandatory External API Integration**: The application must integrate with at least one external API (e.g., NewsAPI, Firebase Auth)
+- **Simple UI for Testing**: A minimal UI must be implemented to facilitate Selenium testing
+
+## Backend Requirements
+
+### Technology Stack
+
+- **Python 3.11**: Base programming language
+- **FastAPI**: Web framework for building APIs
+- **SQLite**: Database for local development
+- **SQLAlchemy**: ORM for database interactions
+- **Pydantic**: Data validation and settings management
+- **Poetry**: Dependency management for environment and dependencies
+
+### API Design
+
+- RESTful API design principles
+- OpenAPI/Swagger documentation for auto-generated API docs
+- JSON responses with consistent structure
+- Proper HTTP status codes
+- Rate limiting for public endpoints
+
+### Authentication
+
+- JWT-based authentication
+- Role-based access control
+- Secure password handling (no plaintext storage)
+- Token refresh mechanism
+
+## Frontend Requirements
+
+### Technology Stack
+
+- **Streamlit**: Primary framework for frontend development
+- **Responsive Design**: Works on desktop and mobile
+
+### User Experience
+
+- Intuitive navigation
+- Fast page loads
+- Clear error messages
+- Accessible design
+- Testable UI elements for Selenium tests
+
+## Data Management
+
+### Database
+
+- Proper indexing for frequently queried fields
+- Database migrations for schema changes
+- Connection pooling
+
+### Caching
+
+- Cache frequently accessed data
+- Implement cache invalidation strategies
+
+## Testing Requirements
+
+### Unit Testing
+
+- Test individual components in isolation
+- Mock external dependencies
+- Target ≥60% line coverage (minimum)
+- Cover edge cases and error scenarios
+
+### Integration Testing
+
+- Test component interactions
+- Verify API contracts
+- Test database operations
+
+### End-to-End Testing
+
+- Simulate user journeys
+- Test critical business flows
+- **Selenium Testing**: Implement UI tests with Selenium
+
+### Other Testing Methods
+
+- **Mutation Testing**: Use mutmut to verify test quality
+- **Fuzz Testing**: Implement with hypothesis where applicable
+- **Stress Testing**: Verify system behavior under load
+- **Exploratory Testing**: Document manual testing findings
+
+## Security Requirements
+
+### OWASP Top 10
+
+- Protection against:
+  - Injection attacks
+  - Broken authentication
+  - Sensitive data exposure
+  - XML External Entities (XXE)
+  - Broken access control
+  - Security misconfigurations
+  - Cross-Site Scripting (XSS)
+  - Insecure deserialization
+  - Components with known vulnerabilities
+  - Insufficient logging & monitoring
+
+### API Security
+
+- Validate all inputs
+- Sanitize outputs
+- Implement HTTPS
+- Use secure headers
+- Implement proper CORS
+
+## Monitoring and Logging
+
+- Structured logging
+- Performance metrics collection
+- Error tracking
+- Usage analytics
+
+## Deployment
+
+- Docker containerization
+- CI/CD pipeline via GitHub
+- Environment-specific configurations
+- Backup and restore procedures 
