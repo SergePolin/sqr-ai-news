@@ -3,7 +3,7 @@ services:
     build: .
     container_name: sqr-ai-news-web
     ports:
-      - "8000:8000"
+      - "3671:8000"
     volumes:
       - .:/app
     environment:
