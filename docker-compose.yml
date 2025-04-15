@@ -1,7 +1,6 @@
 services:
   web:
     build: .
-    container_name: sqr-ai-news-web
     ports:
       - "${PORT:-3671}:8000"
     volumes:
