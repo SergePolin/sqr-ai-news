@@ -5,6 +5,10 @@ description = "AI-Powered News Aggregator"
 authors = ["Serge Polin <s.polin@innopolis.university>"]
 readme = "README.md"
 
+packages = [
+  { include = "app" }
+]
+
 [tool.poetry.dependencies]
 python = ">=3.11"
 fastapi = ">=0.115.0,<0.116.0"
