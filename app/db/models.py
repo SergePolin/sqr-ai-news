@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, UUID
 from sqlalchemy.sql import func
+import uuid
 
 from app.db.database import Base
 
@@ -20,3 +21,15 @@ class NewsArticle(Base):
     sentiment_score = Column(Float, nullable=True)
     category = Column(String(50), nullable=True)
     keywords = Column(String(255), nullable=True) 
+
+
+class UserChannels(Base):
+    __tablename__ = "user_channels"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String(255), index=True)
+    channel_alias = Column(String(255), index=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+
