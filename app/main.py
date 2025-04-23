@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router as news_router
+from app.api.feed import router as feed_router
 from app.db.database import engine
 from app.db import models
 
@@ -25,6 +26,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(news_router)
+app.include_router(feed_router)
 
 @app.get("/")
 async def root():
