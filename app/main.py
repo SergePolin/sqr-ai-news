@@ -5,6 +5,8 @@ import threading
 import signal
 import sys
 import psutil
+from fastapi.responses import RedirectResponse
+
 
 from app.api.routes import router as news_router
 from app.api.feed import router as feed_router
@@ -53,9 +55,14 @@ threading.Thread(target=run_streamlit).start()
 
 @app.get("/")
 async def root():
+    # if not is_streamlit_running():
+    #     print("Starting Streamlit...")
+    #     threading.Thread(target=run_streamlit).start()
+    # return {"message": "Welcome to AI-Powered News Aggregator API"}
     if not is_streamlit_running():
+        print("Starting Streamlit...")
         threading.Thread(target=run_streamlit).start()
-    return {"message": "Welcome to AI-Powered News Aggregator API"}
+    return RedirectResponse(url="http://74.179.83.105:8501") 
 
 @app.get("/health")
 async def health_check():
