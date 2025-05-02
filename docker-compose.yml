@@ -39,8 +39,14 @@ services:
     networks:
       - news_network
     labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.streamlit.loadbalancer.server.port=8501"
+      - "traefik.http.services.streamlit.loadbalancer.server.scheme=http"
+      - "traefik.http.middlewares.streamlit-compress.compress=true"
+      - "traefik.http.middlewares.streamlit-strip.stripprefix.prefixes=/streamlit"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.streamlit.middlewares=sslheader"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Host=localhost"
+      - "traefik.http.routers.streamlit.middlewares=sslheader,streamlit-compress"
 
 networks:
   news_network:

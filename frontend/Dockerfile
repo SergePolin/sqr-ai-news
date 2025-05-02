@@ -11,6 +11,12 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Ensure .streamlit directory exists
+RUN mkdir -p /app/.streamlit
+
+# Copy .streamlit configuration (if exists)
+COPY .streamlit /app/.streamlit/
+
 # Copy the Streamlit app
 COPY . .
 
@@ -18,4 +24,4 @@ COPY . .
 EXPOSE 8501
 
 # Run the Streamlit app with settings optimized for running behind a reverse proxy
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.baseUrlPath=/", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--server.enableWebsocketCompression=false", "--server.headless=true"] 
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.enableCORS=true", "--server.enableXsrfProtection=false", "--server.baseUrlPath="] 
