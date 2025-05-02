@@ -46,24 +46,10 @@ def get_news(user_id):
                         )
                 # else:
                 #     st.write(f"Нет статей для канала {channel['channel_alias']}.")
+        else:
+            st.write("Нет новостей для отображения.")
+
     return []
-    # return [
-    #     {
-    #         "title": "Первая новость",
-    #         "description": "Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости.",
-    #         "link": "http://example.com/first-news"
-    #     },
-    #     {
-    #         "title": "Вторая новость",
-    #         "description": "Описание второй новости.",
-    #         "link": "http://example.com/second-news"
-    #     },
-    #     {
-    #         "title": "Третья новость",
-    #         "description": "Описание третьей новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. ",
-    #         "link": "http://example.com/third-news"
-    #     }
-    # ]
 
 def main():
     st.title("Получить новости")
@@ -95,21 +81,21 @@ def main():
     # Button to get news
     if st.button("Получить новости"):
         news = get_news(user_id)
-        if news:
-                for article in news:
-                    # Using HTML to create a rectangle
-                    st.markdown(
-                        f"""
-                        <div style='background-color: rgba(240, 240, 240, 0.2); padding: 10px; margin: 10px 0; border-radius: 5px;'>
-                            <h4>{article['title']}</h4>
-                            <p>{article['description']}</p>
-                            <a href="{article['link']}">Читать далее</a>
-                        </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
-        else:
-            st.write("Нет новостей для отображения.")
+        # if news:
+        #         for article in news:
+        #             # Using HTML to create a rectangle
+        #             st.markdown(
+        #                 f"""
+        #                 <div style='background-color: rgba(240, 240, 240, 0.2); padding: 10px; margin: 10px 0; border-radius: 5px;'>
+        #                     <h4>{article['title']}</h4>
+        #                     <p>{article['description']}</p>
+        #                     <a href="{article['link']}">Читать далее</a>
+        #                 </div>
+        #                 """, 
+        #                 unsafe_allow_html=True
+        #             )
+        # else:
+            # st.write("Нет новостей для отображения.")
 
 if __name__ == "__main__":
     main() 
