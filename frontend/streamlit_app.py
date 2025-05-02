@@ -4,7 +4,7 @@ import re
 import os
 
 # Get API URL from environment or use default
-API_URL = os.environ.get("API_URL", "http://web:8000")
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
 
 def add_channel(channel_name):
     if not channel_name:
@@ -25,9 +25,27 @@ def get_news(user_id):
     if user_id:
         response = requests.get(f"{API_URL}/feed?userID={user_id}")
         if response.status_code == 200:
-            return response.json()  
-        else:
-            st.error("Ошибка при получении новостей.")
+            # return response.json()  
+            data = response.json()
+            print("Received data:", data)  # Output the received data to the console
+            # Проходим по каждому каналу
+            for channel in data:
+                articles = channel.get('articles', [])
+                if articles:  # Проверяем, есть ли статьи
+                    for article in articles:
+                        # Выводим информацию о статье
+                        st.markdown(
+                            f"""
+                            <div style='background-color: rgba(240, 240, 240, 0.2); padding: 10px; margin: 10px 0; border-radius: 5px;'>
+                                <h4>{article['title']}</h4>
+                                <p>{article['description']}</p>
+                                <a href="{article['link']}">Читать далее</a>
+                            </div>
+                            """, 
+                            unsafe_allow_html=True
+                        )
+                # else:
+                #     st.write(f"Нет статей для канала {channel['channel_alias']}.")
     return []
     # return [
     #     {
