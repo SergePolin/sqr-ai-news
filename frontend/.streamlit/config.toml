@@ -5,8 +5,6 @@ headless = true
 enableWebsocketCompression = false
 maxUploadSize = 50
 maxMessageSize = 200
-# Add origin to specify your domain
-allowedOrigins = ["*"]
 
 [browser]
 gatherUsageStats = false
