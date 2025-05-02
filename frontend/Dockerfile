@@ -20,6 +20,13 @@ COPY .streamlit /app/.streamlit/
 # Copy the Streamlit app
 COPY . .
 
+# Set environment variables
+ENV STREAMLIT_SERVER_ENABLE_CORS=true
+ENV STREAMLIT_SERVER_ALLOWED_ORIGINS="*"
+ENV STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_BASE_URL_PATH=""
+
 # Expose the Streamlit port
 EXPOSE 8501
 

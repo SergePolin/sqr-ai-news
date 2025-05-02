@@ -27,6 +27,12 @@ services:
       - ./frontend:/app
     environment:
       - API_URL=http://web:8000
+      - STREAMLIT_SERVER_ENABLE_CORS=true
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+      - STREAMLIT_SERVER_ALLOWED_ORIGINS=*
+      - STREAMLIT_SERVER_BASE_URL_PATH=
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
     depends_on:
       - web
     restart: unless-stopped
