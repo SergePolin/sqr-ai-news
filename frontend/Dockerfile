@@ -17,5 +17,5 @@ COPY . .
 # Expose the Streamlit port
 EXPOSE 8501
 
-# Run the Streamlit app
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0"] 
+# Run the Streamlit app with settings optimized for running behind a reverse proxy
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.baseUrlPath=/", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--server.enableWebsocketCompression=false", "--server.headless=true"] 

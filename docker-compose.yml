@@ -21,8 +21,8 @@ services:
   
   frontend:
     build: ./frontend
-    ports:
-      - "${STREAMLIT_PORT:-8501}:8501"
+    expose:
+      - "8501"
     volumes:
       - ./frontend:/app
     environment:
@@ -38,6 +38,9 @@ services:
       start_period: 10s
     networks:
       - news_network
+    labels:
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.streamlit.middlewares=sslheader"
 
 networks:
   news_network:
