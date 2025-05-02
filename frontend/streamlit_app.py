@@ -1,6 +1,10 @@
 import streamlit as st
 import requests 
 import re
+import os
+
+# Get API URL from environment or use default
+API_URL = os.environ.get("API_URL", "http://web:8000")
 
 def add_channel(channel_name):
     if not channel_name:
@@ -9,7 +13,7 @@ def add_channel(channel_name):
         st.error("Имя канала должно содержать только латиницу, цифры и '_'")
     else:
         response = requests.post(
-            "http://localhost:8000/feed",  
+            f"{API_URL}/feed",  
             json={"UserID": "example_user_id", "Channel_alias": f"@{channel_name}"}  
         )
         if response.status_code == 200:
@@ -19,7 +23,7 @@ def add_channel(channel_name):
 
 def get_news(user_id):
     # if user_id:
-    #     response = requests.get(f"http://localhost:8000/feed?userID={user_id}")
+    #     response = requests.get(f"{API_URL}/feed?userID={user_id}")
     #     if response.status_code == 200:
     #         return response.json()  
     #     else:
@@ -89,11 +93,5 @@ def main():
         else:
             st.write("Нет новостей для отображения.")
 
-
-    
-
-    
-
-
 if __name__ == "__main__":
-    main()
+    main() 

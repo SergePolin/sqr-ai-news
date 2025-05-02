@@ -1,19 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import subprocess
-import threading
 import signal
 import sys
-import psutil
-
 
 from app.api.routes import router as news_router
 from app.api.feed import router as feed_router
 from app.db.database import engine
 from app.db import models
-
-import signal
-import sys
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -37,26 +30,8 @@ app.add_middleware(
 app.include_router(news_router)
 app.include_router(feed_router)
 
-# Function to run Streamlit
-def run_streamlit():
-    subprocess.run(["streamlit", "run", "app/streamlit_app.py"])
-
-def is_streamlit_running():
-    for proc in psutil.process_iter(['name']):
-        if proc.info['name'] == 'streamlit.exe':  # Для Windows
-            return True
-        if proc.info['name'] == 'streamlit':  # Для macOS
-            return True
-    return False
-
-# Start Streamlit in a separate thread
-threading.Thread(target=run_streamlit).start()
-
 @app.get("/")
 async def root():
-    # if not is_streamlit_running():
-    #     print("Starting Streamlit...")
-    #     threading.Thread(target=run_streamlit).start()
     return {"message": "Welcome to AI-Powered News Aggregator API"}
 
 @app.get("/health")
@@ -67,10 +42,9 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True) 
 
-# Функция для завершения приложений
+# Handle termination signal
 def signal_handler(sig, frame):
     print("Stopping applications...")
     sys.exit(0)
 
-# Обработка сигнала завершения
 signal.signal(signal.SIGINT, signal_handler)
