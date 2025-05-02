@@ -5,6 +5,8 @@ headless = true
 enableWebsocketCompression = false
 maxUploadSize = 50
 maxMessageSize = 200
+# Force HTTP protocol
+useSSL = false
 
 [browser]
 gatherUsageStats = false

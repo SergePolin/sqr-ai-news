@@ -26,9 +26,10 @@ ENV STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
 ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_SERVER_BASE_URL_PATH=""
 ENV STREAMLIT_SERVER_ENABLE_WEBSOCKET_COMPRESSION=false
+ENV STREAMLIT_SERVER_USE_SSL=false
 
 # Expose the Streamlit port
 EXPOSE 8501
 
 # Run the Streamlit app with settings optimized for running behind a reverse proxy
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.enableCORS=true", "--server.enableXsrfProtection=false", "--server.baseUrlPath="] 
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.enableCORS=true", "--server.enableXsrfProtection=false", "--server.baseUrlPath=", "--server.useSSL=false"] 
