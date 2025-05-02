@@ -22,30 +22,30 @@ def add_channel(channel_name):
             st.error("Ошибка при добавлении канала.")
 
 def get_news(user_id):
-    # if user_id:
-    #     response = requests.get(f"{API_URL}/feed?userID={user_id}")
-    #     if response.status_code == 200:
-    #         return response.json()  
-    #     else:
-    #         st.error("Ошибка при получении новостей.")
-    # return []
-    return [
-        {
-            "title": "Первая новость",
-            "description": "Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости.",
-            "link": "http://example.com/first-news"
-        },
-        {
-            "title": "Вторая новость",
-            "description": "Описание второй новости.",
-            "link": "http://example.com/second-news"
-        },
-        {
-            "title": "Третья новость",
-            "description": "Описание третьей новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. ",
-            "link": "http://example.com/third-news"
-        }
-    ]
+    if user_id:
+        response = requests.get(f"{API_URL}/feed?userID={user_id}")
+        if response.status_code == 200:
+            return response.json()  
+        else:
+            st.error("Ошибка при получении новостей.")
+    return []
+    # return [
+    #     {
+    #         "title": "Первая новость",
+    #         "description": "Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости.",
+    #         "link": "http://example.com/first-news"
+    #     },
+    #     {
+    #         "title": "Вторая новость",
+    #         "description": "Описание второй новости.",
+    #         "link": "http://example.com/second-news"
+    #     },
+    #     {
+    #         "title": "Третья новость",
+    #         "description": "Описание третьей новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. Описание первой новости. ",
+    #         "link": "http://example.com/third-news"
+    #     }
+    # ]
 
 def main():
     st.title("Получить новости")
