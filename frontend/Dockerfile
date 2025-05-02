@@ -26,11 +26,11 @@ ENV STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
 ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_SERVER_BASE_URL_PATH=""
 ENV STREAMLIT_SERVER_ENABLE_WEBSOCKET_COMPRESSION=false
-ENV STREAMLIT_SERVER_USE_SSL=false
-ENV STREAMLIT_BROWSER_SERVER_PORT=8501
+# Note: useSSL is only valid in config.toml, not as an environment variable
+# ENV STREAMLIT_SERVER_USE_SSL=false
 
 # Expose the Streamlit port
 EXPOSE 8501
 
 # Run the Streamlit app with settings optimized for running behind a reverse proxy
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.enableCORS=true", "--server.enableXsrfProtection=false", "--server.baseUrlPath=", "--server.useSSL=false", "--browser.serverPort=8501"] 
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.enableCORS=true", "--server.enableXsrfProtection=false", "--server.baseUrlPath="] 

@@ -5,13 +5,8 @@ headless = true
 enableWebsocketCompression = false
 maxUploadSize = 50
 maxMessageSize = 200
-# Force HTTP protocol
-useSSL = false
-port = 8501
-baseUrlPath = ""
-runOnSave = false
 
 [browser]
 gatherUsageStats = false
-serverAddress = "sqr-project-dev-frcqok-ab42d2-74-179-83-105.traefik.me"
+serverAddress = "localhost"
 serverPort = 8501 
