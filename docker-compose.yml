@@ -36,7 +36,7 @@ services:
       - web
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      test: ["CMD", "curl", "-f", "http://localhost:8501/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -44,12 +44,19 @@ services:
     networks:
       - news_network
     labels:
-      # Essential WebSocket support for HTTP Traefik - will be merged with PaaS labels
+      # Essential routing configuration
+      - "traefik.enable=true"
+      - "traefik.http.services.streamlit.loadbalancer.server.port=8501"
+      - "traefik.http.routers.sqr-project-dev-frcqok-100-web.rule=Host(`sqr-project-dev-frcqok-ab42d2-74-179-83-105.traefik.me`)"
+      - "traefik.http.routers.sqr-project-dev-frcqok-100-web.service=streamlit"
+      
+      # Essential WebSocket support for HTTP Traefik
       - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Proto=http"
-      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Host=${TRAEFIK_HOST:-localhost}"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Host=sqr-project-dev-frcqok-ab42d2-74-179-83-105.traefik.me"
       - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Connection=Upgrade"
       - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Upgrade=websocket"
-      # Apply middleware to the HTTP router (not HTTPS)
+      
+      # Apply middleware to the HTTP router
       - "traefik.http.routers.sqr-project-dev-frcqok-100-web.middlewares=streamlit-ws@docker"
 
 networks:

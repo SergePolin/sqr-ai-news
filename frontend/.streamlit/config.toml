@@ -7,8 +7,11 @@ maxUploadSize = 50
 maxMessageSize = 200
 # Force HTTP protocol
 useSSL = false
+port = 8501
+baseUrlPath = ""
+runOnSave = false
 
 [browser]
 gatherUsageStats = false
-serverAddress = "localhost"
+serverAddress = "sqr-project-dev-frcqok-ab42d2-74-179-83-105.traefik.me"
 serverPort = 8501 
