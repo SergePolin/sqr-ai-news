@@ -2,6 +2,11 @@
 enableCORS = true
 enableXsrfProtection = false
 headless = true
+enableWebsocketCompression = false
+maxUploadSize = 50
+maxMessageSize = 200
 
 [browser]
-gatherUsageStats = false 
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501 

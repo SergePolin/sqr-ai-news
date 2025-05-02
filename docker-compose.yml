@@ -39,14 +39,13 @@ services:
     networks:
       - news_network
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.streamlit.loadbalancer.server.port=8501"
-      - "traefik.http.services.streamlit.loadbalancer.server.scheme=http"
-      - "traefik.http.middlewares.streamlit-compress.compress=true"
-      - "traefik.http.middlewares.streamlit-strip.stripprefix.prefixes=/streamlit"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Host=localhost"
-      - "traefik.http.routers.streamlit.middlewares=sslheader,streamlit-compress"
+      # Essential WebSocket support for Traefik - will be merged with PaaS labels
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Host=${TRAEFIK_HOST:-localhost}"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Upgrade=websocket"
+      # Add this to both router definitions (will be appended to PaaS middleware chains)
+      - "traefik.http.routers.sqr-project-dev-frcqok-100-websecure.middlewares=streamlit-ws@docker"
 
 networks:
   news_network:
