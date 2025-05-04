@@ -11,8 +11,8 @@ The AI-Powered News Aggregator is a service that fetches news from multiple sour
 
 ### Core Features
 
-- **User Authentication**: Login/signup functionality using Firebase Auth
-- **News Fetching**: Retrieval of articles from NewsAPI
+- **User Authentication**: Login/signup functionality
+- **News Fetching**: Retrieval of articles
 - **Search Functionality**: Keyword-based search for articles
 - **Category Filtering**: Filter articles by categories (sports, tech, politics, etc.)
 - **Bookmarking**: Save favorite articles for later reading
@@ -21,7 +21,7 @@ The AI-Powered News Aggregator is a service that fetches news from multiple sour
 
 - Minimum of three major interconnected features must be implemented
 - Each team member must implement at least one separate functionality
-- Features must use at least one external API (e.g., authentication, news API, etc.)
+- Features must use at least one external API
 - A simple UI must be implemented to enable automated testing with Selenium
 
 ### Feature Interconnections

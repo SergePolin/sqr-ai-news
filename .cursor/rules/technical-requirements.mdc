@@ -12,13 +12,13 @@ The AI-Powered News Aggregator should follow a clean architecture pattern with c
 - **API Layer**: FastAPI endpoints that handle HTTP requests and responses
 - **Service Layer**: Business logic that processes data and manages operations
 - **Data Access Layer**: Database interactions via SQLAlchemy ORM
-- **External Services Layer**: Integration with NewsAPI, Firebase Auth, etc.
+- **External Services Layer**: Integration with external API
 
 ## Core Requirements
 
 - Minimum of three major interconnected features
 - Each team member must implement at least one separate functionality
-- **Mandatory External API Integration**: The application must integrate with at least one external API (e.g., NewsAPI, Firebase Auth)
+- **Mandatory External API Integration**: The application must integrate with at least one external API
 - **Simple UI for Testing**: A minimal UI must be implemented to facilitate Selenium testing
 
 ## Backend Requirements

@@ -1,17 +1,11 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from typing import List, Optional
 from datetime import datetime
 
-from app.db.models import NewsArticle
-from app.db import models
-
-
-def get_article(db: Session, article_id: int) -> Optional[NewsArticle]:
-    return db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
-
-
-def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
-    return db.query(NewsArticle).filter(NewsArticle.url == url).first()
+from app.db.models import NewsArticle, UserChannels, User
+from app.core.security import get_password_hash, verify_password
+from app.schemas.user import UserCreate
 
 
 def get_articles(
@@ -21,6 +15,9 @@ def get_articles(
     source: Optional[str] = None,
     category: Optional[str] = None
 ) -> List[NewsArticle]:
+    """
+    Get articles with optional filtering by source and category.
+    """
     query = db.query(NewsArticle)
     
     if source:
@@ -29,34 +26,46 @@ def get_articles(
     if category:
         query = query.filter(NewsArticle.category == category)
     
-    return query.order_by(NewsArticle.published_date.desc()).offset(skip).limit(limit).all()
+    return query.offset(skip).limit(limit).all()
 
 
-# Create - Создание новой подписки
-def create_user_channel(db: Session, user_id: str, channel_alias: str):
-    db_channel = models.UserChannels(
-        user_id=user_id,
-        channel_alias=channel_alias
-    )
+def get_article(db: Session, article_id: int) -> Optional[NewsArticle]:
+    """
+    Get a specific article by ID.
+    """
+    return db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
+
+
+def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
+    return db.query(NewsArticle).filter(NewsArticle.url == url).first()
+
+
+def add_user_channel(db: Session, user_id: str, channel_alias: str):
+    """
+    Add a channel for a user.
+    """
+    db_channel = UserChannels(user_id=user_id, channel_alias=channel_alias)
     db.add(db_channel)
     db.commit()
     db.refresh(db_channel)
     return db_channel
 
 
-# Read - Получение подписок пользователя
 def get_user_channels(db: Session, user_id: str):
-    return db.query(models.UserChannels).filter(models.UserChannels.user_id == user_id).all()
+    """
+    Get all channels for a user.
+    """
+    return db.query(UserChannels).filter(UserChannels.user_id == user_id).all()
 
 
 # Read - Получение конкретной подписки
 def get_channel(db: Session, channel_id: str):
-    return db.query(models.UserChannels).filter(models.UserChannels.id == channel_id).first()
+    return db.query(UserChannels).filter(UserChannels.id == channel_id).first()
 
 
 # Update - Обновление подписки
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
-    db_channel = db.query(models.UserChannels).filter(models.UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
         db_channel.channel_alias = new_channel_alias
         db.commit()
@@ -66,8 +75,52 @@ def update_channel(db: Session, channel_id: str, new_channel_alias: str):
 
 # Delete - Удаление подписки
 def delete_channel(db: Session, channel_id: str):
-    db_channel = db.query(models.UserChannels).filter(models.UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
         db.delete(db_channel)
         db.commit()
-    return db_channel 
+    return db_channel
+
+
+# User-related operations
+
+def get_user_by_username(db: Session, username: str) -> Optional[User]:
+    """
+    Get a user by username.
+    """
+    return db.query(User).filter(User.username == username).first()
+
+
+def get_user_by_email(db: Session, email: str) -> Optional[User]:
+    """
+    Get a user by email.
+    """
+    return db.query(User).filter(User.email == email).first()
+
+
+def create_user(db: Session, user: UserCreate) -> User:
+    """
+    Create a new user.
+    """
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
+    """
+    Authenticate a user by username and password.
+    """
+    user = get_user_by_username(db, username)
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user 

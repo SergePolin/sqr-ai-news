@@ -11,69 +11,10 @@ This document outlines the user-facing features that must be implemented in the 
 
 - Each team member must implement at least one separate functionality
 - Minimum three major interconnected features must be implemented
-- External API integration is mandatory (e.g., NewsAPI, Firebase Auth)
+- External API integration is mandatory
 - A simple UI must be implemented for testing via Selenium
 
 ## Core Features
-
-### User Authentication
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| Sign Up | High | Allow users to create a new account using email/password | Firebase Auth |
-| Login | High | Allow users to log in with existing credentials | Firebase Auth |
-| Logout | High | Allow users to securely log out of the application | Firebase Auth |
-| Password Reset | Medium | Allow users to reset their password via email | Firebase Auth |
-| Profile Management | Medium | Allow users to update profile information | Firebase Auth |
-| Social Authentication | Low | Optional login via Google, Facebook, etc. | OAuth providers |
-
-### News Fetching and Display
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| News Homepage | High | Display a curated list of latest news articles | NewsAPI |
-| Article View | High | Display full article content with source attribution | NewsAPI |
-| Pagination | High | Navigate through multiple pages of news results | N/A |
-| Image Support | Medium | Display article images where available | NewsAPI |
-| Video Support | Low | Support for video content in articles | NewsAPI |
-
-### Search Functionality
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| Keyword Search | High | Search for articles containing specific keywords | NewsAPI |
-| Advanced Search | Medium | Filter by date range, source, author | NewsAPI |
-| Search History | Medium | Access previous searches | N/A |
-| Search Suggestions | Low | Suggest search terms as user types | Optional: Search API |
-
-### Category Filtering
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| Category Selection | High | Filter articles by predefined categories | NewsAPI |
-| Subcategories | Medium | Support for nested category hierarchies | N/A |
-| Multiple Categories | Medium | Select multiple categories simultaneously | N/A |
-| Custom Categories | Low | Allow users to create custom categories | N/A |
-
-### Bookmarking
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| Save Articles | High | Allow users to bookmark articles for later | N/A |
-| View Bookmarks | High | Access a list of all bookmarked articles | N/A |
-| Remove Bookmarks | High | Remove articles from bookmarks | N/A |
-| Bookmark Folders | Medium | Organize bookmarks into custom folders | N/A |
-| Bookmark Sync | Medium | Sync bookmarks across devices | Optional: Cloud Storage API |
-
-## AI-Enhanced Features
-
-| Feature | Priority | Description | External API |
-|---------|----------|-------------|-------------|
-| Content Summarization | Medium | AI-generated article summaries | Optional: NLP API |
-| Sentiment Analysis | Medium | Display sentiment of articles (positive/negative/neutral) | Optional: Sentiment API |
-| Personalized Recommendations | Medium | Suggest articles based on reading history | N/A |
-| Topic Clustering | Low | Group related articles together | Optional: NLP API |
-| Trending Topics | Low | Highlight currently trending news topics | Optional: Trending API |
 
 ## UI Requirements
 
@@ -121,8 +62,8 @@ This document outlines the user-facing features that must be implemented in the 
 
 ### Phase 1 (MVP)
 
-- Basic user authentication (with Firebase Auth or similar)
-- News fetching from a single source (NewsAPI)
+- Basic user authentication
+- News fetching from a single source
 - Simple category filtering
 - Basic search functionality
 - Basic bookmarking
