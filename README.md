@@ -193,6 +193,7 @@ This app uses these cool technologies:
 
 Made with ❤️ by Bantiki 🎀 team
 
+
 # AI-Powered News Aggregator
 
 This project is a news aggregator service with AI-powered features. It fetches news from multiple sources and provides user authentication, news categorization, and AI-enhanced summarization.
