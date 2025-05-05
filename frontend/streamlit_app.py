@@ -262,17 +262,71 @@ def main():
             else:
                 st.error("Пожалуйста, введите имя канала.")
 
-        # AI features options
-        st.subheader("Настройки AI")
-        generate_summaries = st.checkbox("Генерировать AI-саммари для статей", 
-                                        help="Использовать AI для создания кратких саммари статей")
-        generate_categories = st.checkbox("Генерировать AI-категории для статей", 
-                                        help="Использовать AI для определения категории статей")
+        # Update articles button
+        if st.button("Обновить статьи"):
+            with st.spinner("Обновление статей из каналов..."):
+                update_response = requests.post(
+                    f"{API_URL}/feed/update",
+                    headers={"Authorization": f"Bearer {st.session_state.token}"}
+                )
+                if update_response.status_code == 200:
+                    st.success("Обновление запущено! Проверьте новости через несколько секунд.")
+                else:
+                    st.error(f"Ошибка при обновлении: {update_response.text}")
 
-        # Button to get news
-        if st.button("Получить новости"):
+        # Category filter
+        if 'news_data' not in st.session_state:
+            st.session_state.news_data = None
+        if st.button("Получить новости") or st.session_state.news_data is None:
             with st.spinner("Загрузка новостей..."):
-                get_news(st.session_state.token, generate_summaries, generate_categories)
+                response = requests.get(
+                    f"{API_URL}/feed?generate_summaries=true&generate_categories=true",
+                    headers={"Authorization": f"Bearer {st.session_state.token}"}
+                )
+                if response.status_code == 200:
+                    st.session_state.news_data = response.json()
+                else:
+                    st.error(f"Ошибка при получении новостей: {response.text}")
+                    st.session_state.news_data = []
+
+        news_data = st.session_state.news_data or []
+        # Collect all unique categories
+        categories = set()
+        for channel in news_data:
+            for article in channel.get('articles', []):
+                cat = article.get('category')
+                if cat:
+                    categories.add(cat)
+        categories = sorted(categories)
+        categories.insert(0, 'Все категории')
+        selected_category = st.selectbox("Фильтр по категории:", categories)
+
+        # Display articles filtered by category
+        for channel in news_data:
+            st.subheader(f"Канал: {channel['channel_alias']}")
+            articles = channel.get('articles', [])
+            filtered_articles = [a for a in articles if selected_category == 'Все категории' or a.get('category') == selected_category]
+            if filtered_articles:
+                for idx, article in enumerate(filtered_articles):
+                    description = clean_html(article.get('description', ''))
+                    title = article.get('title', '')
+                    link = article.get('link', '#')
+                    with st.container():
+                        col1, col2 = st.columns([4, 1])
+                        with col1:
+                            st.markdown(f"### {title}")
+                            if article.get('category'):
+                                st.markdown(f"**Category:** {article.get('category')}")
+                            if article.get('ai_summary'):
+                                st.markdown("**AI Summary:**")
+                                st.info(article.get('ai_summary'))
+                            with st.expander("Show Full Article"):
+                                st.markdown(description)
+                        with col2:
+                            st.markdown(f"[Читать в Telegram]({link})", unsafe_allow_html=False)
+                        st.markdown("---")
+            else:
+                st.write(f"Нет статей для выбранной категории в канале {channel['channel_alias']}.")
 
 if __name__ == "__main__":
     main() 
