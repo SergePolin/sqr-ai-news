@@ -2,6 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import signal
 import sys
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+if os.path.exists(".env"):
+    load_dotenv()
+    print("Loaded environment variables from .env file")
 
 from app.api.routes import router as news_router
 from app.api.feed import router as feed_router
@@ -38,7 +45,20 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    # Check Azure OpenAI credentials
+    azure_openai_key = os.environ.get("AZURE_OPENAI_KEY", "")
+    azure_openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
+    openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+    
+    ai_status = {
+        "azure_openai_configured": bool(azure_openai_key and azure_openai_endpoint),
+        "openai_configured": bool(openai_api_key)
+    }
+    
+    return {
+        "status": "ok",
+        "ai_status": ai_status
+    }
 
 if __name__ == "__main__":
     import uvicorn

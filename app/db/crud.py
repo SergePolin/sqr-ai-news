@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from app.db.models import NewsArticle, UserChannels, User
@@ -37,7 +37,45 @@ def get_article(db: Session, article_id: int) -> Optional[NewsArticle]:
 
 
 def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
+    """
+    Get a news article by its URL.
+    """
     return db.query(NewsArticle).filter(NewsArticle.url == url).first()
+
+
+def create_or_update_article(db: Session, article_data: Dict[str, Any]) -> NewsArticle:
+    """
+    Create a new article or update if it already exists (by URL).
+    
+    Args:
+        db: Database session
+        article_data: Dictionary containing article data
+        
+    Returns:
+        Created or updated NewsArticle object
+    """
+    # Check if article already exists
+    if 'url' not in article_data:
+        raise ValueError("Article data must contain URL")
+        
+    existing_article = get_article_by_url(db, article_data['url'])
+    
+    if existing_article:
+        # Update existing article
+        for key, value in article_data.items():
+            if hasattr(existing_article, key) and key != 'id':
+                setattr(existing_article, key, value)
+        
+        db.commit()
+        db.refresh(existing_article)
+        return existing_article
+    else:
+        # Create new article
+        new_article = NewsArticle(**article_data)
+        db.add(new_article)
+        db.commit()
+        db.refresh(new_article)
+        return new_article
 
 
 def add_user_channel(db: Session, user_id: str, channel_alias: str):

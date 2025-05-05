@@ -2,6 +2,8 @@ import streamlit as st
 import requests 
 import re
 import os
+from bs4 import BeautifulSoup
+import html
 
 # Get API URL from environment or use default
 API_URL = os.environ.get("API_URL", "http://localhost:8000")
@@ -44,13 +46,81 @@ def add_channel(channel_name, token):
     else:
         st.error(f"Ошибка при добавлении канала: {response.text}")
 
-def get_news(token):
+def clean_html(html_content):
+    """Clean HTML content and extract plain text."""
+    # Replace HTML tags with appropriate markdown or remove them
+    if not html_content:
+        return ""
+    
+    # Use BeautifulSoup to parse HTML if possible
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        return soup.get_text()
+    except:
+        # Fallback to regex replacements if BeautifulSoup fails
+        text = re.sub(r'<[^>]*>', '', html_content)
+        return text
+
+def get_news(token, generate_summaries=False, generate_categories=False):
     if not token:
         st.error("Вы не авторизованы. Пожалуйста, войдите в систему.")
         return []
     
+    # Custom CSS for better styling
+    st.markdown("""
+    <style>
+    .article-card {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .article-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #1E3A8A;
+    }
+    .article-content {
+        color: #333;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+    .read-more-btn {
+        display: inline-block;
+        padding: 5px 15px;
+        background-color: #4361EE;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        transition: background-color 0.3s;
+        margin-right: 10px;
+    }
+    .read-more-btn:hover {
+        background-color: #3730A3;
+    }
+    .ai-summary {
+        background-color: rgba(144, 238, 144, 0.2);
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #2E8B57;
+    }
+    .ai-summary h5 {
+        margin-top: 0;
+        color: #2E8B57;
+        font-weight: 600;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     response = requests.get(
-        f"{API_URL}/feed",
+        f"{API_URL}/feed?generate_summaries={str(generate_summaries).lower()}&generate_categories={str(generate_categories).lower()}",
         headers={"Authorization": f"Bearer {token}"}
     )
     
@@ -61,18 +131,39 @@ def get_news(token):
             st.subheader(f"Канал: {channel['channel_alias']}")
             articles = channel.get('articles', [])
             if articles:  # Проверяем, есть ли статьи
-                for article in articles:
-                    # Выводим информацию о статье
-                    st.markdown(
-                        f"""
-                        <div style='background-color: rgba(240, 240, 240, 0.2); padding: 10px; margin: 10px 0; border-radius: 5px;'>
-                            <h4>{article['title']}</h4>
-                            <p>{article['description']}</p>
-                            <a href="{article['link']}">Читать далее</a>
-                        </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
+                for idx, article in enumerate(articles):
+                    # Clean description/content from HTML tags
+                    description = clean_html(article.get('description', ''))
+                    title = article.get('title', '')
+                    link = article.get('link', '#')
+                    
+                    # Create article card with proper layout
+                    with st.container():
+                        # Use columns for better layout
+                        col1, col2 = st.columns([4, 1])
+                        
+                        with col1:
+                            # Display title
+                            st.markdown(f"### {title}")
+                            
+                            # Display category if available
+                            if article.get('category'):
+                                st.markdown(f"**Category:** {article.get('category')}")
+                            
+                            # Display description with length limit
+                            st.markdown(f"{description[:500]}{'...' if len(description) > 500 else ''}")
+                            
+                            # Display AI summary if available
+                            if article.get('ai_summary'):
+                                st.markdown("**AI Summary:**")
+                                st.info(article.get('ai_summary'))
+                        
+                        with col2:
+                            # Add direct link instead of a button
+                            st.markdown(f"[Читать в Telegram]({link})", unsafe_allow_html=False)
+                        
+                        # Add separator between articles
+                        st.markdown("---")
             else:
                 st.write(f"Нет статей для канала {channel['channel_alias']}.")
     else:
@@ -170,9 +261,17 @@ def main():
             else:
                 st.error("Пожалуйста, введите имя канала.")
 
+        # AI features options
+        st.subheader("Настройки AI")
+        generate_summaries = st.checkbox("Генерировать AI-саммари для статей", 
+                                        help="Использовать AI для создания кратких саммари статей")
+        generate_categories = st.checkbox("Генерировать AI-категории для статей", 
+                                        help="Использовать AI для определения категории статей")
+
         # Button to get news
         if st.button("Получить новости"):
-            get_news(st.session_state.token)
+            with st.spinner("Загрузка новостей..."):
+                get_news(st.session_state.token, generate_summaries, generate_categories)
 
 if __name__ == "__main__":
     main() 

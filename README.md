@@ -192,3 +192,83 @@ This app uses these cool technologies:
 - **Python 3.11** (the main language) - Powers everything
 
 Made with ❤️ by Bantiki 🎀 team
+
+# AI-Powered News Aggregator
+
+This project is a news aggregator service with AI-powered features. It fetches news from multiple sources and provides user authentication, news categorization, and AI-enhanced summarization.
+
+## Features
+
+- **User Authentication**: Register and login to access personalized news feeds
+- **Feed Subscription**: Subscribe to Telegram channels for news
+- **AI Summarization**: Generate concise summaries of articles using Azure OpenAI
+- **Search Functionality**: Find articles using keywords
+- **Category Filtering**: Filter articles by categories
+
+## Setup
+
+### Prerequisites
+
+- Python 3.11+
+- Poetry
+- Azure OpenAI API access (for AI summarization)
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/ai-news-aggregator.git
+   cd ai-news-aggregator
+   ```
+
+2. Install dependencies using Poetry:
+   ```
+   poetry install
+   ```
+
+3. Set up environment variables for Azure OpenAI (required for AI summarization):
+   Create a `.env` file in the root directory with:
+   ```
+   AZURE_OPENAI_KEY=your-azure-openai-key
+   AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
+   AZURE_OPENAI_API_VERSION=2023-12-01-preview
+   AZURE_OPENAI_DEPLOYMENT=gpt-4
+   ```
+
+### Running the Application
+
+1. Run the backend server:
+   ```
+   poetry run python run.py
+   ```
+
+2. Run the frontend:
+   ```
+   cd frontend
+   poetry run streamlit run streamlit_app.py
+   ```
+
+## API Documentation
+
+The API documentation is available at `http://localhost:8000/docs` when the server is running.
+
+## AI Features
+
+### Article Summarization
+
+The application uses Azure OpenAI to generate concise summaries of news articles. To use this feature:
+
+1. Set up your Azure OpenAI credentials in the `.env` file
+2. In the frontend, check the "Generate AI summaries for articles" option before fetching news
+3. View AI-generated summaries alongside article content
+
+## Testing
+
+Run tests with:
+```
+poetry run pytest
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

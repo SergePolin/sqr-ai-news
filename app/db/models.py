@@ -20,7 +20,8 @@ class NewsArticle(Base):
     # AI-related fields
     sentiment_score = Column(Float, nullable=True)
     category = Column(String(50), nullable=True)
-    keywords = Column(String(255), nullable=True) 
+    keywords = Column(String(255), nullable=True)
+    ai_summary = Column(Text, nullable=True)
 
 
 class UserChannels(Base):
