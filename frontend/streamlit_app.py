@@ -150,13 +150,14 @@ def get_news(token, generate_summaries=False, generate_categories=False):
                             if article.get('category'):
                                 st.markdown(f"**Category:** {article.get('category')}")
                             
-                            # Display description with length limit
-                            st.markdown(f"{description[:500]}{'...' if len(description) > 500 else ''}")
-                            
-                            # Display AI summary if available
+                            # Display AI summary first if available
                             if article.get('ai_summary'):
                                 st.markdown("**AI Summary:**")
                                 st.info(article.get('ai_summary'))
+                            
+                            # Hide full article text in an accordion
+                            with st.expander("Show Full Article"):
+                                st.markdown(description)
                         
                         with col2:
                             # Add direct link instead of a button
