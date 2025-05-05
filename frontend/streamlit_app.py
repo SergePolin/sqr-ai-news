@@ -274,6 +274,9 @@ def main():
                 else:
                     st.error(f"Ошибка при обновлении: {update_response.text}")
 
+        # Search bar
+        search_query = st.text_input("Поиск по статьям:", value="")
+
         # Category filter
         if 'news_data' not in st.session_state:
             st.session_state.news_data = None
@@ -301,11 +304,19 @@ def main():
         categories.insert(0, 'Все категории')
         selected_category = st.selectbox("Фильтр по категории:", categories)
 
-        # Display articles filtered by category
+        # Display articles filtered by category and search
         for channel in news_data:
             st.subheader(f"Канал: {channel['channel_alias']}")
             articles = channel.get('articles', [])
-            filtered_articles = [a for a in articles if selected_category == 'Все категории' or a.get('category') == selected_category]
+            filtered_articles = [
+                a for a in articles
+                if (selected_category == 'Все категории' or a.get('category') == selected_category)
+                and (
+                    search_query.strip() == ""
+                    or (search_query.lower() in (a.get('title') or '').lower())
+                    or (search_query.lower() in (a.get('description') or '').lower())
+                )
+            ]
             if filtered_articles:
                 for idx, article in enumerate(filtered_articles):
                     description = clean_html(article.get('description', ''))
@@ -326,7 +337,7 @@ def main():
                             st.markdown(f"[Читать в Telegram]({link})", unsafe_allow_html=False)
                         st.markdown("---")
             else:
-                st.write(f"Нет статей для выбранной категории в канале {channel['channel_alias']}.")
+                st.write(f"Нет статей для выбранной категории и/или поискового запроса в канале {channel['channel_alias']}.")
 
 if __name__ == "__main__":
     main() 
