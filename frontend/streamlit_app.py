@@ -262,51 +262,55 @@ def main():
             else:
                 st.error("Пожалуйста, введите имя канала.")
 
-        # Update articles button
-        if st.button("Обновить статьи"):
-            with st.spinner("Обновление статей из каналов..."):
-                update_response = requests.post(
-                    f"{API_URL}/feed/update",
-                    headers={"Authorization": f"Bearer {st.session_state.token}"}
-                )
-                if update_response.status_code == 200:
-                    st.success("Обновление запущено! Проверьте новости через несколько секунд.")
-                else:
-                    st.error(f"Ошибка при обновлении: {update_response.text}")
+        # Sidebar filters and actions
+        with st.sidebar:
+            st.markdown("## Фильтры и действия")
+            search_query = st.text_input("🔍 Поиск по статьям:", value="", help="Введите ключевые слова для поиска по заголовку или содержимому статьи.")
+            if 'news_data' not in st.session_state:
+                st.session_state.news_data = None
+            # Collect all unique categories
+            news_data = st.session_state.news_data or []
+            categories = set()
+            for channel in news_data:
+                for article in channel.get('articles', []):
+                    cat = article.get('category')
+                    if cat:
+                        categories.add(cat)
+            categories = sorted(categories)
+            categories.insert(0, 'Все категории')
+            selected_category = st.selectbox("📂 Фильтр по категории:", categories, help="Показать только статьи выбранной категории.")
+            if st.button("Сбросить фильтры"):
+                search_query = ""
+                selected_category = 'Все категории'
+                st.experimental_rerun()
+            st.markdown("---")
+            if st.button("Обновить статьи", help="Получить последние статьи из каналов Telegram."):
+                with st.spinner("Обновление статей из каналов..."):
+                    update_response = requests.post(
+                        f"{API_URL}/feed/update",
+                        headers={"Authorization": f"Bearer {st.session_state.token}"}
+                    )
+                    if update_response.status_code == 200:
+                        st.success("Обновление запущено! Проверьте новости через несколько секунд.")
+                    else:
+                        st.error(f"Ошибка при обновлении: {update_response.text}")
+            if st.button("Получить новости", help="Загрузить и отобразить свежие статьи.") or st.session_state.news_data is None:
+                with st.spinner("Загрузка новостей..."):
+                    response = requests.get(
+                        f"{API_URL}/feed?generate_summaries=true&generate_categories=true",
+                        headers={"Authorization": f"Bearer {st.session_state.token}"}
+                    )
+                    if response.status_code == 200:
+                        st.session_state.news_data = response.json()
+                        st.success("Новости успешно загружены!")
+                    else:
+                        st.error(f"Ошибка при получении новостей: {response.text}")
+                        st.session_state.news_data = []
 
-        # Search bar
-        search_query = st.text_input("Поиск по статьям:", value="")
-
-        # Category filter
-        if 'news_data' not in st.session_state:
-            st.session_state.news_data = None
-        if st.button("Получить новости") or st.session_state.news_data is None:
-            with st.spinner("Загрузка новостей..."):
-                response = requests.get(
-                    f"{API_URL}/feed?generate_summaries=true&generate_categories=true",
-                    headers={"Authorization": f"Bearer {st.session_state.token}"}
-                )
-                if response.status_code == 200:
-                    st.session_state.news_data = response.json()
-                else:
-                    st.error(f"Ошибка при получении новостей: {response.text}")
-                    st.session_state.news_data = []
-
+        # Main content area
         news_data = st.session_state.news_data or []
-        # Collect all unique categories
-        categories = set()
+        any_articles = False
         for channel in news_data:
-            for article in channel.get('articles', []):
-                cat = article.get('category')
-                if cat:
-                    categories.add(cat)
-        categories = sorted(categories)
-        categories.insert(0, 'Все категории')
-        selected_category = st.selectbox("Фильтр по категории:", categories)
-
-        # Display articles filtered by category and search
-        for channel in news_data:
-            st.subheader(f"Канал: {channel['channel_alias']}")
             articles = channel.get('articles', [])
             filtered_articles = [
                 a for a in articles
@@ -317,27 +321,37 @@ def main():
                     or (search_query.lower() in (a.get('description') or '').lower())
                 )
             ]
+            st.markdown(f"### Канал: {channel['channel_alias']} ")
+            st.markdown(f"<span style='color: #888; font-size: 0.95em;'>Показано статей: <b>{len(filtered_articles)}</b></span>", unsafe_allow_html=True)
             if filtered_articles:
+                any_articles = True
                 for idx, article in enumerate(filtered_articles):
                     description = clean_html(article.get('description', ''))
                     title = article.get('title', '')
                     link = article.get('link', '#')
                     with st.container():
+                        st.markdown(
+                            """
+                            <div style='background: #181c24; border-radius: 12px; border: 1px solid #2a2e38; padding: 1px 2px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(30,58,138,0.04);'>
+                            """,
+                            unsafe_allow_html=True
+                        )
                         col1, col2 = st.columns([4, 1])
                         with col1:
-                            st.markdown(f"### {title}")
+                            st.markdown(f"<span style='font-size:1.15rem; font-weight:600; color:#fff'>{title}</span>", unsafe_allow_html=True)
                             if article.get('category'):
-                                st.markdown(f"**Category:** {article.get('category')}")
+                                st.markdown(f"<span style='color:#fff; font-size:0.95em;'>Категория: <b>{article.get('category')}</b></span>", unsafe_allow_html=True)
                             if article.get('ai_summary'):
-                                st.markdown("**AI Summary:**")
-                                st.info(article.get('ai_summary'))
-                            with st.expander("Show Full Article"):
+                                st.info(article.get('ai_summary'), icon="🤖")
+                            with st.expander("Показать полный текст статьи"):
                                 st.markdown(description)
                         with col2:
-                            st.markdown(f"[Читать в Telegram]({link})", unsafe_allow_html=False)
-                        st.markdown("---")
+                            st.markdown(f"<a href='{link}' target='_blank' style='display:inline-block; padding:8px 18px; background:#4361EE; color:white; border-radius:6px; text-decoration:none; font-size:0.98em; margin-top:8px;'>Читать в Telegram</a>", unsafe_allow_html=True)
+                        st.markdown("</div>", unsafe_allow_html=True)
             else:
-                st.write(f"Нет статей для выбранной категории и/или поискового запроса в канале {channel['channel_alias']}.")
+                st.warning(f"Нет статей для выбранной категории и/или поискового запроса в канале {channel['channel_alias']}.")
+        if not any_articles:
+            st.info("Нет статей, соответствующих выбранным фильтрам или поисковому запросу. Попробуйте изменить фильтры или обновить статьи.", icon="ℹ️")
 
 if __name__ == "__main__":
     main() 
