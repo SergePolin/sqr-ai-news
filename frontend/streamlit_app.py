@@ -235,7 +235,7 @@ def main():
                         st.error("Пароли не совпадают!")
                     else:
                         response = register_user(new_username, new_email, new_password)
-                        if response.status_code == 200:
+                        if response.status_code in (200, 201):
                             st.success("Регистрация успешна! Теперь вы можете войти.")
                             # Automatically login
                             login_response = login_user(new_username, new_password)
