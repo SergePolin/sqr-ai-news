@@ -1,10 +1,8 @@
 """
 Unit tests for CRUD operations.
 """
-import pytest
 
 from app.db import crud
-from app.db.models import NewsArticle
 
 
 def test_get_article(test_db, sample_articles):
@@ -40,7 +38,7 @@ def test_get_articles_with_source_filter(test_db, sample_articles):
     """Test getting articles filtered by source."""
     articles = crud.get_articles(test_db, source="Test Source")
     assert len(articles) == 2
-    
+
     articles = crud.get_articles(test_db, source="Non-existent Source")
     assert len(articles) == 0
 
@@ -50,7 +48,7 @@ def test_get_articles_with_category_filter(test_db, sample_articles):
     articles = crud.get_articles(test_db, category="politics")
     assert len(articles) == 1
     assert articles[0].title == "Test Article 1"
-    
+
     articles = crud.get_articles(test_db, category="technology")
     assert len(articles) == 1
-    assert articles[0].title == "Test Article 2" 
+    assert articles[0].title == "Test Article 2"
