@@ -4,6 +4,7 @@ import re
 import os
 from bs4 import BeautifulSoup
 import html
+import time
 
 # Get API URL from environment or use default
 API_URL = os.environ.get("API_URL", "http://localhost:8000")
@@ -172,6 +173,20 @@ def get_news(token, generate_summaries=False, generate_categories=False):
     
     return []
 
+def get_bookmarked_article_ids(token):
+    response = requests.get(f"{API_URL}/feed/bookmarks", headers={"Authorization": f"Bearer {token}"})
+    if response.status_code == 200:
+        return set(article['id'] for article in response.json())
+    return set()
+
+def add_bookmark(token, article_id):
+    response = requests.post(f"{API_URL}/feed/bookmarks/{article_id}", headers={"Authorization": f"Bearer {token}"})
+    return response.status_code == 201
+
+def remove_bookmark(token, article_id):
+    response = requests.delete(f"{API_URL}/feed/bookmarks/{article_id}", headers={"Authorization": f"Bearer {token}"})
+    return response.status_code == 204
+
 def main():
     # Initialize session state
     if 'token' not in st.session_state:
@@ -201,7 +216,7 @@ def main():
                         st.session_state.username = username
                         st.session_state.is_authenticated = True
                         st.success("Вход выполнен успешно!")
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("Ошибка входа. Проверьте ваши учетные данные.")
                 else:
@@ -229,7 +244,7 @@ def main():
                                 st.session_state.token = data["access_token"]
                                 st.session_state.username = new_username
                                 st.session_state.is_authenticated = True
-                                st.experimental_rerun()
+                                st.rerun()
                         else:
                             st.error(f"Ошибка регистрации: {response.text}")
                 else:
@@ -242,7 +257,7 @@ def main():
             st.session_state.token = None
             st.session_state.username = None
             st.session_state.is_authenticated = False
-            st.experimental_rerun()
+            st.rerun()
         
         # Content for authenticated users
         st.subheader("Добавить новый канал")
@@ -265,6 +280,7 @@ def main():
         # Sidebar filters and actions
         with st.sidebar:
             st.markdown("## Фильтры и действия")
+            show_only_bookmarks = st.checkbox("Показать только избранное", value=False, help="Показать только статьи, которые вы добавили в закладки.")
             search_query = st.text_input("🔍 Поиск по статьям:", value="", help="Введите ключевые слова для поиска по заголовку или содержимому статьи.")
             if 'news_data' not in st.session_state:
                 st.session_state.news_data = None
@@ -282,7 +298,7 @@ def main():
             if st.button("Сбросить фильтры"):
                 search_query = ""
                 selected_category = 'Все категории'
-                st.experimental_rerun()
+                st.rerun()
             st.markdown("---")
             if st.button("Обновить статьи", help="Получить последние статьи из каналов Telegram."):
                 with st.spinner("Обновление статей из каналов..."):
@@ -309,6 +325,18 @@ def main():
 
         # Main content area
         news_data = st.session_state.news_data or []
+        # Theme-aware text color
+        theme = st.get_option('theme.base') if hasattr(st, 'get_option') else None
+        if theme == 'dark':
+            article_text_color = '#fff'
+        else:
+            article_text_color = '#222'  # dark gray for light theme
+        # Get bookmarks for the user
+        if 'bookmarked_ids' not in st.session_state or st.session_state.get('bookmarks_dirty', True):
+            with st.spinner("Загрузка закладок..."):
+                st.session_state.bookmarked_ids = get_bookmarked_article_ids(st.session_state.token)
+                st.session_state.bookmarks_dirty = False
+        bookmarked_ids = st.session_state.bookmarked_ids
         any_articles = False
         for channel in news_data:
             articles = channel.get('articles', [])
@@ -320,6 +348,7 @@ def main():
                     or (search_query.lower() in (a.get('title') or '').lower())
                     or (search_query.lower() in (a.get('description') or '').lower())
                 )
+                and (not show_only_bookmarks or a.get('id') in bookmarked_ids)
             ]
             st.markdown(f"### Канал: {channel['channel_alias']} ")
             st.markdown(f"<span style='color: #888; font-size: 0.95em;'>Показано статей: <b>{len(filtered_articles)}</b></span>", unsafe_allow_html=True)
@@ -329,23 +358,47 @@ def main():
                     description = clean_html(article.get('description', ''))
                     title = article.get('title', '')
                     link = article.get('link', '#')
+                    article_id = article.get('id')
+                    is_bookmarked = article_id in bookmarked_ids
                     with st.container():
                         st.markdown(
-                            """
-                            <div style='background: #181c24; border-radius: 12px; border: 1px solid #2a2e38; padding: 1px 2px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(30,58,138,0.04);'>
+                            f"""
+                            <div style='background: #181c24; border-radius: 12px; border: 1px solid #2a2e38; padding: 1px 2px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(30,58,138,0.04); display: flex; flex-direction: column;'>
                             """,
                             unsafe_allow_html=True
                         )
                         col1, col2 = st.columns([4, 1])
                         with col1:
-                            st.markdown(f"<span style='font-size:1.15rem; font-weight:600; color:#fff'>{title}</span>", unsafe_allow_html=True)
+                            st.markdown(f"<span style='font-size:1.15rem; font-weight:600; color:{article_text_color}'>{title}</span>", unsafe_allow_html=True)
                             if article.get('category'):
-                                st.markdown(f"<span style='color:#fff; font-size:0.95em;'>Категория: <b>{article.get('category')}</b></span>", unsafe_allow_html=True)
+                                st.markdown(f"<span style='color:{article_text_color}; font-size:0.95em;'>Категория: <b>{article.get('category')}</b></span>", unsafe_allow_html=True)
                             if article.get('ai_summary'):
                                 st.info(article.get('ai_summary'), icon="🤖")
                             with st.expander("Показать полный текст статьи"):
                                 st.markdown(description)
                         with col2:
+                            # Bookmark button
+                            if article_id is not None:
+                                if is_bookmarked:
+                                    if st.button("✅ Убрать из избранного", key=f"unbookmark_{article_id}_{idx}"):
+                                        with st.spinner("Удаление из закладок..."):
+                                            if remove_bookmark(st.session_state.token, article_id):
+                                                st.session_state.bookmarks_dirty = True
+                                                st.success("Статья удалена из избранного!")
+                                                time.sleep(0.5)
+                                                st.rerun()
+                                            else:
+                                                st.error("Ошибка при удалении из избранного.")
+                                else:
+                                    if st.button("🔖 В избранное", key=f"bookmark_{article_id}_{idx}"):
+                                        with st.spinner("Добавление в закладки..."):
+                                            if add_bookmark(st.session_state.token, article_id):
+                                                st.session_state.bookmarks_dirty = True
+                                                st.success("Статья добавлена в избранное!")
+                                                time.sleep(0.5)
+                                                st.rerun()
+                                            else:
+                                                st.error("Ошибка при добавлении в избранное.")
                             st.markdown(f"<a href='{link}' target='_blank' style='display:inline-block; padding:8px 18px; background:#4361EE; color:white; border-radius:6px; text-decoration:none; font-size:0.98em; margin-top:8px;'>Читать в Telegram</a>", unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
             else:

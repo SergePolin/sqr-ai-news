@@ -28,4 +28,14 @@ class ArticleCreate(ArticleBase):
     sentiment_score: Optional[float] = None
     category: Optional[str] = None
     keywords: Optional[str] = None
-    ai_summary: Optional[str] = None 
+    ai_summary: Optional[str] = None
+
+
+class Bookmark(BaseModel):
+    id: int
+    user_id: str
+    article_id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True 

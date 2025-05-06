@@ -3,7 +3,7 @@ from sqlalchemy import and_
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from app.db.models import NewsArticle, UserChannels, User
+from app.db.models import NewsArticle, UserChannels, User, Bookmark
 from app.core.security import get_password_hash, verify_password
 from app.schemas.user import UserCreate
 
@@ -161,4 +161,29 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
         return None
     if not verify_password(password, user.hashed_password):
         return None
-    return user 
+    return user
+
+
+def add_bookmark(db: Session, user_id: str, article_id: int) -> Bookmark:
+    bookmark = Bookmark(user_id=user_id, article_id=article_id)
+    db.add(bookmark)
+    db.commit()
+    db.refresh(bookmark)
+    return bookmark
+
+
+def remove_bookmark(db: Session, user_id: str, article_id: int) -> bool:
+    bookmark = db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first()
+    if bookmark:
+        db.delete(bookmark)
+        db.commit()
+        return True
+    return False
+
+
+def get_user_bookmarks(db: Session, user_id: str) -> list[Bookmark]:
+    return db.query(Bookmark).filter_by(user_id=user_id).all()
+
+
+def is_bookmarked(db: Session, user_id: str, article_id: int) -> bool:
+    return db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first() is not None 

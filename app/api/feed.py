@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, status
 from sqlalchemy.orm import Session
 from typing import List
 import uuid
@@ -8,11 +8,12 @@ import requests
 from bs4 import BeautifulSoup
 
 from app.db.database import get_db
-from app.db.crud import add_user_channel, get_user_channels, create_or_update_article, get_articles, get_article_by_url
+from app.db.crud import add_user_channel, get_user_channels, create_or_update_article, get_articles, get_article_by_url, add_bookmark, remove_bookmark, get_user_bookmarks, is_bookmarked
 from app.schemas.channel import ChannelCreate, ChannelResponse
 from app.core.dependencies import get_current_active_user
-from app.db.models import User
+from app.db.models import User, NewsArticle as NewsArticleModel
 from app.core.ai import generate_article_summary, generate_article_category
+from app.schemas.news import Bookmark, NewsArticle
 
 router = APIRouter(prefix="/feed", tags=["feed"])
 
@@ -120,6 +121,7 @@ def get_channels_with_articles(
         articles = []
         for article in articles_db:
             articles.append({
+                "id": article.id,
                 "title": article.title,
                 "description": article.content,
                 "link": article.url,
@@ -150,6 +152,30 @@ def update_all_channels(
     for channel in channels:
         background_tasks.add_task(process_channel_articles, channel.channel_alias, db)
     return {"message": "Update started for all channels."}
+
+
+@router.post("/bookmarks/{article_id}", response_model=Bookmark, status_code=status.HTTP_201_CREATED)
+def add_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    """Add a bookmark for the current user and article."""
+    return add_bookmark(db, str(current_user.id), article_id)
+
+@router.delete("/bookmarks/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    """Remove a bookmark for the current user and article."""
+    removed = remove_bookmark(db, str(current_user.id), article_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="Bookmark not found.")
+    return
+
+@router.get("/bookmarks", response_model=list[NewsArticle])
+def list_user_bookmarks(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    """List all bookmarked articles for the current user."""
+    bookmarks = get_user_bookmarks(db, str(current_user.id))
+    article_ids = [b.article_id for b in bookmarks]
+    if not article_ids:
+        return []
+    articles = db.query(NewsArticleModel).filter(NewsArticleModel.id.in_(article_ids)).all()
+    return articles
 
 # # Legacy endpoint - can be removed after frontend is updated
 # @router.get("/feed")

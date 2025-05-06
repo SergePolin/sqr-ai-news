@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, UUID, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, UUID, Boolean, ForeignKey
 from sqlalchemy.sql import func
 import uuid
 
@@ -44,4 +44,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(255), index=True, nullable=False)
+    article_id = Column(Integer, ForeignKey("news_articles.id"), nullable=False)
+    created_at = Column(DateTime, default=func.now())
 
