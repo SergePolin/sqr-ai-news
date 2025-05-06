@@ -253,6 +253,117 @@ This project is a news aggregator service with AI-powered features. It fetches n
 
 The API documentation is available at `http://localhost:8000/docs` when the server is running.
 
+## API Endpoints Documentation
+
+### Authentication Endpoints
+
+#### Register User
+- **Endpoint**: `POST /auth/register`
+- **Description**: Register a new user in the system
+- **Request Body**:
+  ```json
+  {
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "securepassword123"
+  }
+  ```
+- **Response**: User information excluding password (201 Created)
+- **Errors**: 400 Bad Request if username or email already registered
+
+#### User Login
+- **Endpoint**: `POST /auth/login`
+- **Description**: OAuth2 compatible token login to obtain JWT access token
+- **Request Format**: Form data with username and password
+- **Response**: JWT token for authenticated API access
+  ```json
+  {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer"
+  }
+  ```
+- **Errors**: 401 Unauthorized if credentials are incorrect
+
+### News Feed Endpoints
+
+#### Add Channel
+- **Endpoint**: `POST /feed/`
+- **Description**: Add a new Telegram channel to user's feed and process its articles
+- **Authentication**: Required
+- **Request Body**:
+  ```json
+  {
+    "Channel_alias": "@channelname"
+  }
+  ```
+- **Response**: Created channel information
+- **Notes**: Starts background task to fetch articles and generate AI summaries
+
+#### Get User's Channels with Articles
+- **Endpoint**: `GET /feed/`
+- **Description**: Retrieve all channels the user is subscribed to, along with their articles
+- **Authentication**: Required
+- **Query Parameters**:
+  - `generate_summaries` (boolean): Generate AI summaries for articles
+  - `generate_categories` (boolean): Generate AI categories for articles
+- **Response**: List of channels with their articles and metadata
+
+#### Update All Channels
+- **Endpoint**: `POST /feed/update`
+- **Description**: Trigger an update to fetch new articles for all user's subscribed channels
+- **Authentication**: Required
+- **Response**: Confirmation message
+- **Errors**: 404 Not Found if no channels found for user
+
+#### Add Article Bookmark
+- **Endpoint**: `POST /feed/bookmarks/{article_id}`
+- **Description**: Add an article to user's bookmarks for later reading
+- **Authentication**: Required
+- **Path Parameters**: `article_id` - ID of the article to bookmark
+- **Response**: Created bookmark information (201 Created)
+- **Errors**: 404 Not Found if article not found
+
+#### Remove Article Bookmark
+- **Endpoint**: `DELETE /feed/bookmarks/{article_id}`
+- **Description**: Remove an article from user's bookmarks
+- **Authentication**: Required
+- **Path Parameters**: `article_id` - ID of the article to remove from bookmarks
+- **Response**: No content (204 No Content)
+- **Errors**: 404 Not Found if bookmark not found
+
+#### List User Bookmarks
+- **Endpoint**: `GET /feed/bookmarks`
+- **Description**: List all articles bookmarked by the current user
+- **Authentication**: Required
+- **Response**: List of bookmarked articles with full details
+
+### News API Endpoints
+
+#### Get Articles
+- **Endpoint**: `GET /api/news/articles/`
+- **Description**: Retrieve news articles with optional filtering
+- **Authentication**: Required
+- **Query Parameters**:
+  - `skip` (integer): Number of articles to skip (pagination offset), default: 0
+  - `limit` (integer): Maximum number of articles to return, default: 100
+  - `source` (string): Filter articles by news source
+  - `category` (string): Filter articles by article category
+- **Response**: List of articles matching filter criteria
+
+#### Get Specific Article
+- **Endpoint**: `GET /api/news/articles/{article_id}`
+- **Description**: Retrieve a specific news article by ID
+- **Authentication**: Required
+- **Path Parameters**: `article_id` - ID of the article to retrieve
+- **Response**: Full article details
+- **Errors**: 404 Not Found if article not found
+
+#### Get News Sources
+- **Endpoint**: `GET /api/news/sources/`
+- **Description**: Get a list of all available news sources in the system
+- **Authentication**: Required
+- **Response**: List of unique news source identifiers (e.g., "@TechNews", "@WorldNews")
+
 ## AI Features
 
 ### Article Summarization
