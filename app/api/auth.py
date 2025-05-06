@@ -11,10 +11,28 @@ from app.schemas.user import Token, UserCreate, UserResponse
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     Register a new user.
+    
+    Parameters:
+    - **user**: User information including username, email, and password
+    
+    Returns:
+    - **User information**: Created user details (excluding password)
+    
+    Raises:
+    - **400 Bad Request**: When username or email is already registered
+    
+    Example:
+    ```
+    {
+      "username": "johndoe",
+      "email": "john@example.com",
+      "password": "securepassword123"
+    }
+    ```
     """
     # Check if username already exists
     db_user = get_user_by_username(db, username=user.username)
@@ -42,7 +60,31 @@ def login_for_access_token(
     db: Session = Depends(get_db)
 ):
     """
-    Login and get access token.
+    OAuth2 compatible token login, get an access token for future requests.
+    
+    Parameters:
+    - **username**: User's username
+    - **password**: User's password
+    
+    Returns:
+    - **access_token**: JWT token to be used for authenticated endpoints
+    - **token_type**: Type of the token (bearer)
+    
+    Raises:
+    - **401 Unauthorized**: When credentials are invalid
+    
+    Example request (form-data):
+    ```
+    username=johndoe&password=securepassword123
+    ```
+    
+    Example response:
+    ```
+    {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "token_type": "bearer"
+    }
+    ```
     """
     # Authenticate user
     user = authenticate_user(db, form_data.username, form_data.password)
