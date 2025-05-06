@@ -29,6 +29,7 @@ python-jose = {extras = ["cryptography"], version = "^3.4.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 openai = "^1.77.0"
 bs4 = "^0.0.2"
+sounddevice = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.5,<9.0.0"

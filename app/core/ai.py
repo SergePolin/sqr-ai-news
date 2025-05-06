@@ -7,11 +7,16 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Azure OpenAI configuration
+# Azure OpenAI configuration (update to use only Azure, as per project requirements)
+# Expected environment variables:
+#   AZURE_OPENAI_ENDPOINT
+#   AZURE_OPENAI_API_VERSION
+#   AZURE_OPENAI_DEPLOYMENT
+#   AZURE_OPENAI_KEY
 AZURE_OPENAI_KEY = os.environ.get("AZURE_OPENAI_KEY", "")
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
-AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", "2023-12-01-preview")
-AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4")
+AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
+AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
 
 # Regular OpenAI configuration (fallback)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -21,7 +26,7 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
 client = None
 client_type = None  # 'azure' or 'openai'
 
-# Try to initialize Azure OpenAI client first
+# Only use Azure OpenAI
 if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
     try:
         client = AzureOpenAI(
@@ -34,16 +39,8 @@ if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
     except Exception as e:
         logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
         client = None
-
-# If Azure OpenAI initialization failed, try regular OpenAI
-if client is None and OPENAI_API_KEY:
-    try:
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        client_type = 'openai'
-        logger.info("Regular OpenAI client initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize regular OpenAI client: {str(e)}")
-        client = None
+else:
+    logger.warning("Azure OpenAI credentials missing. Set AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT.")
 
 if client is None:
     logger.warning("No OpenAI credentials provided. AI summarization will be disabled.")

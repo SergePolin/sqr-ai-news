@@ -1,3 +1,4 @@
+import pytest; pytest.skip('Locust file, skip in pytest collection', allow_module_level=True)
 """
 Performance tests using Locust.
 

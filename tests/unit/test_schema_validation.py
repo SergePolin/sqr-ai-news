@@ -49,6 +49,7 @@ def test_news_article_base_invalid_url():
         "content": "This is test content",
         "url": "invalid-url",  # Invalid URL format
         "source": "Test Source",
+        "published_date": datetime.now().isoformat(),
     }
     
     # This should not raise an error since we're not using HttpUrl type
@@ -70,6 +71,7 @@ def test_news_article_model():
         "sentiment_score": 0.75,
         "category": "technology",
         "keywords": "test,article,technology",
+        "published_date": datetime.now().isoformat(),
     }
     
     article = NewsArticle(**data)
@@ -89,6 +91,7 @@ def test_news_article_optional_fields():
         "source": "Test Source",
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat(),
+        "published_date": datetime.now().isoformat(),
     }
     
     article = NewsArticle(**data)

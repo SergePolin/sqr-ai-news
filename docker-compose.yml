@@ -26,8 +26,8 @@ services:
   
   frontend:
     build: ./frontend
-    expose:
-      - 8501
+    ports:
+      - 8501:8501
     volumes:
       - ./frontend:/app
     environment:

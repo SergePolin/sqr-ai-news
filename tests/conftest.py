@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from datetime import datetime
 
 from app.main import app
 from app.db.database import Base, get_db
@@ -66,6 +67,7 @@ def sample_articles(test_db):
             url="http://example.com/article1",
             source="Test Source",
             category="politics",
+            published_date=datetime.now(),
         ),
         NewsArticle(
             title="Test Article 2",
@@ -73,6 +75,7 @@ def sample_articles(test_db):
             url="http://example.com/article2",
             source="Test Source",
             category="technology",
+            published_date=datetime.now(),
         ),
     ]
     
@@ -88,4 +91,26 @@ def sample_articles(test_db):
     # Clean up
     for article in articles:
         test_db.delete(article)
-    test_db.commit() 
+    test_db.commit()
+
+
+@pytest.fixture(scope="function")
+def auth_token(client):
+    """Register and log in a test user, return the JWT token."""
+    username = "testuser"
+    email = "testuser@example.com"
+    password = "testpassword"
+    # Register user (ignore if already exists)
+    client.post("/auth/register", json={
+        "username": username,
+        "email": email,
+        "password": password
+    })
+    # Login user
+    response = client.post("/auth/login", data={
+        "username": username,
+        "password": password
+    })
+    assert response.status_code == 200, f"Login failed: {response.text}"
+    token = response.json()["access_token"]
+    return token 

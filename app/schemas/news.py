@@ -38,4 +38,8 @@ class Bookmark(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True 
+        orm_mode = True
+
+
+# Alias for backward compatibility with tests and other modules
+NewsArticleBase = ArticleBase 
