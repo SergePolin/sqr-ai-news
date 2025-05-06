@@ -261,7 +261,7 @@ def main():
         
         # Content for authenticated users
         st.subheader("Добавить новый канал")
-        channel_name_input = st.text_input("Введите имя Telegram канала:", value="", placeholder="Имя канала")
+        channel_name_input = st.text_input("Введите алиас Telegram канала без @, например: TechNews", value="", placeholder="Имя канала")
 
         # Check for prefixes and trim
         if channel_name_input.startswith("@"):

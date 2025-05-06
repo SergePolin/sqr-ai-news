@@ -24,10 +24,32 @@ def read_articles(
     Retrieve news articles with optional filtering.
     
     Parameters:
-    - skip: Number of articles to skip
-    - limit: Maximum number of articles to return
-    - source: Filter by news source
-    - category: Filter by article category
+    - **skip** (query, optional): Number of articles to skip (pagination offset). Default: 0
+    - **limit** (query, optional): Maximum number of articles to return. Default: 100
+    - **source** (query, optional): Filter articles by news source
+    - **category** (query, optional): Filter articles by article category
+    
+    Returns:
+    - **List of NewsArticle**: Articles matching the filter criteria
+    
+    Raises:
+    - **401 Unauthorized**: When user is not authenticated
+    
+    Example response:
+    ```json
+    [
+      {
+        "id": 1,
+        "title": "Article Title",
+        "content": "Article content...",
+        "url": "https://example.com/article",
+        "source": "@channelname",
+        "published_date": "2023-01-01T12:00:00",
+        "ai_summary": "AI generated summary",
+        "category": "Technology"
+      }
+    ]
+    ```
     """
     articles = crud.get_articles(db, skip=skip, limit=limit, source=source, category=category)
     return articles
@@ -41,6 +63,30 @@ def read_article(
 ):
     """
     Retrieve a specific news article by ID.
+    
+    Parameters:
+    - **article_id** (path): The ID of the article to retrieve
+    
+    Returns:
+    - **NewsArticle**: The requested article details
+    
+    Raises:
+    - **401 Unauthorized**: When user is not authenticated
+    - **404 Not Found**: When article with the specified ID doesn't exist
+    
+    Example response:
+    ```json
+    {
+      "id": 1,
+      "title": "Article Title",
+      "content": "Article content...",
+      "url": "https://example.com/article",
+      "source": "@channelname",
+      "published_date": "2023-01-01T12:00:00",
+      "ai_summary": "AI generated summary",
+      "category": "Technology"
+    }
+    ```
     """
     db_article = crud.get_article(db, article_id=article_id)
     if db_article is None:
@@ -48,13 +94,28 @@ def read_article(
     return db_article
 
 
-@router.get("/sources/")
+@router.get("/sources/", response_model=List[str])
 def get_sources(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Get a list of all available news sources.
+    
+    Returns:
+    - **List of strings**: All unique news sources in the database
+    
+    Raises:
+    - **401 Unauthorized**: When user is not authenticated
+    
+    Example response:
+    ```json
+    [
+      "@TechNews",
+      "@WorldNews",
+      "@SportsChannel"
+    ]
+    ```
     """
     # Query all distinct sources from the database
     sources = db.query(crud.NewsArticle.source).distinct().all()
