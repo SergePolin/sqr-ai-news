@@ -38,12 +38,16 @@ def is_streamlit_running():
     try:
         response = requests.get("http://localhost:8501", timeout=2)
         return response.status_code == 200
-    except:
+    except Exception:
         return False
 
 
 def try_multiple_selectors(driver, selectors, timeout=10):
-    """Try multiple selectors to find an element, return the first one found or None. Log each attempt."""
+    """
+    Try multiple selectors to find an element,
+    return the first one found or None.
+    Log each attempt.
+    """
     start_time = time.time()
     while time.time() - start_time < timeout:
         for selector_type, selector in selectors:
@@ -51,18 +55,26 @@ def try_multiple_selectors(driver, selectors, timeout=10):
                 element = driver.find_element(selector_type, selector)
                 if element.is_displayed():
                     print(
-                        f"[DEBUG] Found element with selector: {selector_type} {selector}")
+                        f"[DEBUG] Found element with selector: {selector_type}"
+                        f" {selector}"
+                    )
                     return element
             except Exception as e:
                 print(
-                    f"[DEBUG] Selector failed: {selector_type} {selector} | Exception: {e}")
+                    f"[DEBUG] Selector failed: {selector_type} "
+                    f"{selector} | Exception: {e}"
+                )
         time.sleep(0.5)
     print("[DEBUG] No selector matched after timeout.")
     return None
 
 
 def selenium_register(driver, username, email, password):
-    """Register a new user, with better error handling and multiple selector attempts. Log all steps."""
+    """
+    Register a new user, with better error handling
+    and multiple selector attempts.
+    Log all steps.
+    """
     try:
         driver.get("http://localhost:8501")
         time.sleep(2)  # Allow Streamlit to fully load
@@ -85,71 +97,182 @@ def selenium_register(driver, username, email, password):
             print("[DEBUG] Could not find registration tab button!")
         # Use only visible registration tab panel for all fields
         username_selectors = [
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Имя пользователя']"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Имя пользователя')]/following-sibling::div//input"),
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Имя пользователя')]/following::input"),
-            (By.CSS_SELECTOR,
-             "div[role='tabpanel']:not([hidden]) input[aria-label='Имя пользователя']")
+            (
+                By.XPATH,
+                "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='"
+                "Имя пользователя']"
+            ),
+            (
+                By.XPATH,
+                "//div[@role='tabpanel' and not(@hidden)]"
+                "//label[contains(., 'Имя пользователя')]"
+                "/following-sibling::div//input"
+            ),
+            (
+                By.XPATH,
+                "//div[@role='tabpanel' and not(@hidden)]"
+                "//div[contains(., 'Имя пользователя')]/following::input"
+            ),
+            (
+                By.CSS_SELECTOR,
+                "div[role='tabpanel']:not([hidden]) "
+                "input[aria-label='Имя пользователя']"
+            )
         ]
+
         username_input = try_multiple_selectors(driver, username_selectors)
         if not username_input:
             print("[DEBUG] Could not find username input!")
             print("[DEBUG] All input fields on page:")
             for inp in driver.find_elements(By.TAG_NAME, "input"):
                 print(
-                    f"[DEBUG] input: aria-label={inp.get_attribute('aria-label')}, type={inp.get_attribute('type')}, name={inp.get_attribute('name')}, placeholder={inp.get_attribute('placeholder')}, value={inp.get_attribute('value')}")
+                    "[DEBUG] input: "
+                    f"aria-label={inp.get_attribute('aria-label')}, "
+                    f"type={inp.get_attribute('type')}, "
+                    f"name={inp.get_attribute('name')}, "
+                    f"placeholder={inp.get_attribute('placeholder')}, "
+                    f"value={inp.get_attribute('value')}"
+                )
             print("[DEBUG] Full page source:")
             print(driver.page_source)
             return False
         email_selectors = [
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Email']"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Email')]/following-sibling::div//input"),
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Email')]/following::input"),
-            (By.CSS_SELECTOR,
-             "div[role='tabpanel']:not([hidden]) input[aria-label='Email']")
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//input[@aria-label='Email']"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//label[contains(., 'Email')]/following-sibling::div"
+                    "//input"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//div[contains(., 'Email')]/following::input"
+                )
+            ),
+            (
+                By.CSS_SELECTOR,
+                (
+                    "div[role='tabpanel']:not([hidden]) "
+                    "input[aria-label='Email']"
+                )
+            )
         ]
+
         email_input = try_multiple_selectors(driver, email_selectors)
         if not email_input:
             print("[DEBUG] Could not find email input!")
             for inp in driver.find_elements(By.TAG_NAME, "input"):
                 print(
-                    f"[DEBUG] input: aria-label={inp.get_attribute('aria-label')}, type={inp.get_attribute('type')}, name={inp.get_attribute('name')}, placeholder={inp.get_attribute('placeholder')}, value={inp.get_attribute('value')}")
+                    "[DEBUG] input: "
+                    f"aria-label={inp.get_attribute('aria-label')}, "
+                    f"type={inp.get_attribute('type')}, "
+                    f"name={inp.get_attribute('name')}, "
+                    f"placeholder={inp.get_attribute('placeholder')}, "
+                    f"value={inp.get_attribute('value')}"
+                    )
             print(driver.page_source)
             return False
         password_selectors = [
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Пароль']"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Пароль')]/following-sibling::div//input[@type='password']"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Пароль')]/following::input[@type='password']"),
-            (By.CSS_SELECTOR,
-             "div[role='tabpanel']:not([hidden]) input[aria-label='Пароль']")
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//input[@aria-label='Пароль']"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//label[contains(., 'Пароль')]/following-sibling::div"
+                    "//input[@type='password']"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//div[contains(., 'Пароль')]/following::input"
+                    "[@type='password']"
+                )
+            ),
+            (
+                By.CSS_SELECTOR,
+                (
+                    "div[role='tabpanel']:not([hidden]) "
+                    "input[aria-label='Пароль']"
+                )
+            )
         ]
+
         password_input = try_multiple_selectors(driver, password_selectors)
         if not password_input:
             print("[DEBUG] Could not find password input!")
             for inp in driver.find_elements(By.TAG_NAME, "input"):
                 print(
-                    f"[DEBUG] input: aria-label={inp.get_attribute('aria-label')}, type={inp.get_attribute('type')}, name={inp.get_attribute('name')}, placeholder={inp.get_attribute('placeholder')}, value={inp.get_attribute('value')}")
+                    "[DEBUG] input: "
+                    f"aria-label={inp.get_attribute('aria-label')}, "
+                    f"type={inp.get_attribute('type')}, "
+                    f"name={inp.get_attribute('name')}, "
+                    f"placeholder={inp.get_attribute('placeholder')}, "
+                    f"value={inp.get_attribute('value')}"
+                )
             print(driver.page_source)
             return False
         confirm_selectors = [
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Подтвердите пароль']"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Подтвердите пароль')]/following-sibling::div//input"),
-            (By.XPATH, "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Подтвердите пароль')]/following::input"),
-            (By.CSS_SELECTOR,
-             "div[role='tabpanel']:not([hidden]) input[aria-label='Подтвердите пароль']")
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//input[@aria-label='Подтвердите пароль']"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//label[contains(., 'Подтвердите пароль')]"
+                    "/following-sibling::div//input"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//div[contains(., 'Подтвердите пароль')]/following::input"
+                )
+            ),
+            (
+                By.CSS_SELECTOR,
+                (
+                    "div[role='tabpanel']:not([hidden]) "
+                    "input[aria-label='Подтвердите пароль']"
+                )
+            )
         ]
+
         confirm_input = try_multiple_selectors(driver, confirm_selectors)
         if not confirm_input:
             print("[DEBUG] Could not find confirm password input!")
             for inp in driver.find_elements(By.TAG_NAME, "input"):
                 print(
-                    f"[DEBUG] input: aria-label={inp.get_attribute('aria-label')}, type={inp.get_attribute('type')}, name={inp.get_attribute('name')}, placeholder={inp.get_attribute('placeholder')}, value={inp.get_attribute('value')}")
+                    "[DEBUG] input: "
+                    f"aria-label={inp.get_attribute('aria-label')}, "
+                    f"type={inp.get_attribute('type')}, "
+                    f"name={inp.get_attribute('name')}, "
+                    f"placeholder={inp.get_attribute('placeholder')}, "
+                    f"value={inp.get_attribute('value')}"
+                )
             print(driver.page_source)
             return False
         username_input.clear()
@@ -161,12 +284,28 @@ def selenium_register(driver, username, email, password):
         confirm_input.clear()
         confirm_input.send_keys(password)
         register_selectors = [
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//button[.//p[text()='Зарегистрироваться']]"),
-            (By.XPATH,
-             "//div[@role='tabpanel' and not(@hidden)]//button[contains(., 'Зарегистрироваться')]"),
-            (By.CSS_SELECTOR, "div[role='tabpanel']:not([hidden]) button")
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//button[.//p[text()='Зарегистрироваться']]"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[@role='tabpanel' and not(@hidden)]"
+                    "//button[contains(., 'Зарегистрироваться')]"
+                )
+            ),
+            (
+                By.CSS_SELECTOR,
+                (
+                    "div[role='tabpanel']:not([hidden]) button"
+                )
+            )
         ]
+
         register_button = try_multiple_selectors(driver, register_selectors)
         if not register_button:
             print("[DEBUG] Could not find register button!")
@@ -203,12 +342,27 @@ def selenium_login(driver, username, password):
 
         # Find username input
         username_selectors = [
-            (By.XPATH, "//input[@aria-label='Имя пользователя']"),
-            (By.XPATH,
-             "//label[contains(., 'Имя пользователя')]/following-sibling::div//input"),
-            (By.XPATH,
-             "//div[contains(., 'Имя пользователя')]/following::input"),
-            (By.CSS_SELECTOR, "input[type='text']")
+            (
+                By.XPATH,
+                "//input[@aria-label='Имя пользователя']"
+            ),
+            (
+                By.XPATH,
+                (
+                    "//label[contains(., 'Имя пользователя')]"
+                    "/following-sibling::div//input"
+                )
+            ),
+            (
+                By.XPATH,
+                (
+                    "//div[contains(., 'Имя пользователя')]/following::input"
+                )
+            ),
+            (
+                By.CSS_SELECTOR,
+                "input[type='text']"
+            )
         ]
 
         username_input = try_multiple_selectors(driver, username_selectors)
@@ -262,7 +416,10 @@ def selenium_login(driver, username, password):
 
 
 def test_homepage_shows_login(driver):
-    """Test that the homepage shows the login form for unauthenticated users."""
+    """
+    Test that the homepage shows
+    the login form for unauthenticated users.
+    """
     driver.get("http://localhost:8501")
     time.sleep(2)
     # Check for heading with app title
@@ -323,7 +480,9 @@ def test_articles_list(driver):
     no_articles = try_multiple_selectors(driver, [
         (By.XPATH, "//*[contains(text(), 'Нет статей')]")
     ], timeout=2)
-    assert article or no_articles, "Neither articles nor 'Нет статей' message found after fetching news"
+    assert article or no_articles, (
+        "Neither articles nor 'Нет статей' message found after fetching news"
+    )
 
 
 def test_search_functionality(driver):
@@ -346,7 +505,11 @@ def test_search_functionality(driver):
     search_input.send_keys(Keys.RETURN)
     time.sleep(2)
     # Optionally, check for search results (e.g., article titles)
-    # result = try_multiple_selectors(driver, [(By.XPATH, "//div[contains(@class, 'article-title')]")], timeout=5)
+    # result = try_multiple_selectors(
+    #     driver,
+    #     [(By.XPATH, "//div[contains(@class, 'article-title')]")],
+    #     timeout=5
+    # )
     # assert result, "No search results found"
 
 
@@ -386,7 +549,8 @@ def test_category_filter(driver):
         (By.XPATH, "//label[contains(., 'Фильтр по категории')]")
     ], timeout=10)
     assert select_label, "Category filter selectbox label not found"
-    # Find the select element (Streamlit uses a custom dropdown, so look for the selectbox root)
+    # Find the select element (Streamlit uses a custom dropdown,
+    # so look for the selectbox root)
     select_root = try_multiple_selectors(driver, [
         (By.XPATH, "//div[contains(@data-baseweb, 'select')]"),
         (By.CSS_SELECTOR, "div[data-baseweb='select']")
@@ -400,9 +564,13 @@ def test_category_filter(driver):
     option_texts = [opt.text for opt in options]
     print(f"[DEBUG] Category options: {option_texts}")
     if not options:
-        print("[DEBUG] No category options found in selectbox (expected for new user with no articles/categories).")
+        print(
+            "[DEBUG] No category options found in selectbox "
+            "(expected for new user with no articles/categories)."
+        )
         return  # Test passes: filter UI is present, but no categories yet
-    # If more than one category (besides 'Все категории'), select the first real category
+    # If more than one category (besides 'Все категории'),
+    # select the first real category
     for opt in options:
         if opt.text and opt.text != 'Все категории':
             opt.click()

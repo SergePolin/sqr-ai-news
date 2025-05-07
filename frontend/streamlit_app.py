@@ -62,7 +62,7 @@ def clean_html(html_content):
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
         return soup.get_text()
-    except:
+    except Exception:
         # Fallback to regex replacements if BeautifulSoup fails
         text = re.sub(r'<[^>]*>', '', html_content)
         return text
@@ -397,7 +397,7 @@ def main():
                     is_bookmarked = article_id in bookmarked_ids
                     with st.container():
                         st.markdown(
-                            f"""
+                            """
                             <div style='background: #181c24; border-radius: 12px; border: 1px solid #2a2e38; padding: 1px 2px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(30,58,138,0.04); display: flex; flex-direction: column;'>
                             """,
                             unsafe_allow_html=True

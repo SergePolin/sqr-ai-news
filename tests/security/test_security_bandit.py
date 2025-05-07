@@ -57,7 +57,7 @@ def run_bandit_scan():
         subprocess.run(cmd, check=True)
         print(f"HTML report generated at {html_report_path}")
     except subprocess.CalledProcessError:
-        print(f"Failed to generate HTML report")
+        print("Failed to generate HTML report")
 
     # Parse JSON report to check for critical issues
     try:
@@ -72,10 +72,14 @@ def run_bandit_scan():
 
         if high_severity_issues:
             print(
-                f"WARNING: {len(high_severity_issues)} high severity issues found!")
+                f"WARNING: {len(high_severity_issues)} "
+                "high severity issues found!"
+            )
             for issue in high_severity_issues:
                 print(
-                    f"- {issue.get('filename')}:{issue.get('line_number')} - {issue.get('issue_text')}")
+                    f"- {issue.get('filename')}:{issue.get('line_number')} - "
+                    f"{issue.get('issue_text')}"
+                )
             return False
         else:
             print("No high severity issues found.")
