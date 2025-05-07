@@ -127,7 +127,8 @@ def get_news(token, generate_summaries=False, generate_categories=False):
     """, unsafe_allow_html=True)
 
     response = requests.get(
-        f"{API_URL}/feed?generate_summaries={str(generate_summaries).lower()}&generate_categories={str(generate_categories).lower()}",
+        f"{API_URL}/feed?generate_summaries={str(generate_summaries).lower()}"
+        f"&generate_categories={str(generate_categories).lower()}",
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -170,7 +171,9 @@ def get_news(token, generate_summaries=False, generate_categories=False):
                         with col2:
                             # Add direct link instead of a button
                             st.markdown(
-                                f"[Читать в Telegram]({link})", unsafe_allow_html=False)
+                                f"[Читать в Telegram]({link})",
+                                unsafe_allow_html=False
+                            )
 
                         # Add separator between articles
                         st.markdown("---")
@@ -192,13 +195,17 @@ def get_bookmarked_article_ids(token):
 
 def add_bookmark(token, article_id):
     response = requests.post(
-        f"{API_URL}/feed/bookmarks/{article_id}", headers={"Authorization": f"Bearer {token}"})
+        f"{API_URL}/feed/bookmarks/{article_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
     return response.status_code == 201
 
 
 def remove_bookmark(token, article_id):
     response = requests.delete(
-        f"{API_URL}/feed/bookmarks/{article_id}", headers={"Authorization": f"Bearer {token}"})
+        f"{API_URL}/feed/bookmarks/{article_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
     return response.status_code == 204
 
 
@@ -234,7 +241,10 @@ def main():
                         st.success("Вход выполнен успешно!")
                         st.rerun()
                     else:
-                        st.error("Ошибка входа. Проверьте ваши учетные данные.")
+                        st.error(
+                            "Ошибка входа. "
+                            "Проверьте ваши учетные данные."
+                        )
                 else:
                     st.error("Пожалуйста, заполните все поля.")
 
@@ -249,7 +259,12 @@ def main():
                 "Подтвердите пароль", type="password", key="confirm_password")
 
             if st.button("Зарегистрироваться"):
-                if new_username and new_email and new_password and confirm_password:
+                if (
+                    new_username and
+                    new_email and
+                    new_password and
+                    confirm_password
+                ):
                     if new_password != confirm_password:
                         st.error("Пароли не совпадают!")
                     else:
@@ -284,7 +299,10 @@ def main():
         # Content for authenticated users
         st.subheader("Добавить новый канал")
         channel_name_input = st.text_input(
-            "Введите алиас Telegram канала без @, например: TechNews", value="", placeholder="Имя канала")
+            "Введите алиас Telegram канала без @, например: TechNews",
+            value="",
+            placeholder="Имя канала"
+        )
 
         # Check for prefixes and trim
         if channel_name_input.startswith("@"):
@@ -305,9 +323,18 @@ def main():
         with st.sidebar:
             st.markdown("## Фильтры и действия")
             show_only_bookmarks = st.checkbox(
-                "Показать только избранное", value=False, help="Показать только статьи, которые вы добавили в закладки.")
+                "Показать только избранное",
+                value=False,
+                help="Показать только статьи, которые вы добавили в закладки."
+            )
             search_query = st.text_input(
-                "🔍 Поиск по статьям:", value="", help="Введите ключевые слова для поиска по заголовку или содержимому статьи.")
+                "🔍 Поиск по статьям:",
+                value="",
+                help=(
+                    "Введите ключевые слова для поиска по заголовку "
+                    "или содержимому статьи."
+                )
+            )
             if 'news_data' not in st.session_state:
                 st.session_state.news_data = None
             # Collect all unique categories
@@ -321,31 +348,53 @@ def main():
             categories = sorted(categories)
             categories.insert(0, 'Все категории')
             selected_category = st.selectbox(
-                "📂 Фильтр по категории:", categories, help="Показать только статьи выбранной категории.")
+                "📂 Фильтр по категории:",
+                categories,
+                help="Показать только статьи выбранной категории."
+            )
             if st.button("Сбросить фильтры"):
                 search_query = ""
                 selected_category = 'Все категории'
                 st.rerun()
             st.markdown("---")
-            if st.button("Обновить статьи", help="Получить последние статьи из каналов Telegram."):
+            if st.button(
+                "Обновить статьи",
+                help="Получить последние статьи из каналов Telegram."
+            ):
                 with st.spinner("Обновление статей из каналов..."):
                     update_response = requests.post(
                         f"{API_URL}/feed/update",
                         headers={
-                            "Authorization": f"Bearer {st.session_state.token}"}
+                            "Authorization": (
+                                f"Bearer {st.session_state.token}"
+                            )
+                        }
                     )
                     if update_response.status_code == 200:
                         st.success(
-                            "Обновление запущено! Проверьте новости через несколько секунд.")
+                            "Обновление запущено! "
+                            "Проверьте новости через несколько секунд."
+                        )
                     else:
                         st.error(
                             f"Ошибка при обновлении: {update_response.text}")
-            if st.button("Получить новости", help="Загрузить и отобразить свежие статьи.") or st.session_state.news_data is None:
+            if (
+                st.button(
+                    "Получить новости",
+                    help="Загрузить и отобразить свежие статьи."
+                )
+                or st.session_state.news_data is None
+            ):
                 with st.spinner("Загрузка новостей..."):
                     response = requests.get(
-                        f"{API_URL}/feed?generate_summaries=true&generate_categories=true",
+                        (
+                            f"{API_URL}/feed?"
+                            "generate_summaries=true&"
+                            "generate_categories=true"
+                        ),
                         headers={
-                            "Authorization": f"Bearer {st.session_state.token}"}
+                            "Authorization": f"Bearer {st.session_state.token}"
+                        }
                     )
                     if response.status_code == 200:
                         st.session_state.news_data = response.json()
@@ -365,7 +414,10 @@ def main():
         else:
             article_text_color = '#222'  # dark gray for light theme
         # Get bookmarks for the user
-        if 'bookmarked_ids' not in st.session_state or st.session_state.get('bookmarks_dirty', True):
+        if (
+            'bookmarked_ids' not in st.session_state
+            or st.session_state.get('bookmarks_dirty', True)
+        ):
             with st.spinner("Загрузка закладок..."):
                 st.session_state.bookmarked_ids = get_bookmarked_article_ids(
                     st.session_state.token)
@@ -376,17 +428,28 @@ def main():
             articles = channel.get('articles', [])
             filtered_articles = [
                 a for a in articles
-                if (selected_category == 'Все категории' or a.get('category') == selected_category)
-                and (
+                if (
+                    selected_category == 'Все категории'
+                    or a.get('category') == selected_category
+                ) and (
                     search_query.strip() == ""
                     or (search_query.lower() in (a.get('title') or '').lower())
-                    or (search_query.lower() in (a.get('description') or '').lower())
+                    or (
+                        search_query.lower()
+                        in (a.get('description') or '').lower()
+                    )
                 )
                 and (not show_only_bookmarks or a.get('id') in bookmarked_ids)
             ]
             st.markdown(f"### Канал: {channel['channel_alias']} ")
             st.markdown(
-                f"<span style='color: #888; font-size: 0.95em;'>Показано статей: <b>{len(filtered_articles)}</b></span>", unsafe_allow_html=True)
+                (
+                    f"<span style='color: #888; font-size: 0.95em;'>"
+                    f"Показано статей: <b>{len(filtered_articles)}</b>"
+                    f"</span>"
+                ),
+                unsafe_allow_html=True
+            )
             if filtered_articles:
                 any_articles = True
                 for idx, article in enumerate(filtered_articles):
@@ -397,18 +460,41 @@ def main():
                     is_bookmarked = article_id in bookmarked_ids
                     with st.container():
                         st.markdown(
-                            """
-                            <div style='background: #181c24; border-radius: 12px; border: 1px solid #2a2e38; padding: 1px 2px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(30,58,138,0.04); display: flex; flex-direction: column;'>
-                            """,
+                            (
+                                "<div style='background: #181c24; "
+                                "border-radius: 12px; "
+                                "border: 1px solid #2a2e38; padding: 1px 2px; "
+                                "margin-bottom: 18px; "
+                                "box-shadow: 0 2px 8px rgba(30,58,138,0.04); "
+                                "display: flex; "
+                                "flex-direction: column;'>"
+                            ),
                             unsafe_allow_html=True
                         )
                         col1, col2 = st.columns([4, 1])
                         with col1:
                             st.markdown(
-                                f"<span style='font-size:1.15rem; font-weight:600; color:{article_text_color}'>{title}</span>", unsafe_allow_html=True)
+                                (
+                                    f"<span style='font-size:1.15rem; "
+                                    f"font-weight:600; "
+                                    f"color:{article_text_color}'>"
+                                    f"{title}"
+                                    f"</span>"
+                                ),
+                                unsafe_allow_html=True
+                            )
                             if article.get('category'):
                                 st.markdown(
-                                    f"<span style='color:{article_text_color}; font-size:0.95em;'>Категория: <b>{article.get('category')}</b></span>", unsafe_allow_html=True)
+                                    (
+                                        f"<span style='color:"
+                                        f"{article_text_color}; "
+                                        f"font-size:0.95em;'>"
+                                        f"Категория: "
+                                        f"<b>{article.get('category')}</b>"
+                                        f"</span>"
+                                    ),
+                                    unsafe_allow_html=True
+                                )
                             if article.get('ai_summary'):
                                 st.info(article.get('ai_summary'), icon="🤖")
                             with st.expander("Показать полный текст статьи"):
@@ -417,37 +503,86 @@ def main():
                             # Bookmark button
                             if article_id is not None:
                                 if is_bookmarked:
-                                    if st.button("✅ Убрать из избранного", key=f"unbookmark_{article_id}_{idx}"):
-                                        with st.spinner("Удаление из закладок..."):
-                                            if remove_bookmark(st.session_state.token, article_id):
-                                                st.session_state.bookmarks_dirty = True
+                                    if st.button(
+                                        "✅ Убрать из избранного",
+                                        key=f"unbookmark_{article_id}_{idx}"
+                                    ):
+                                        with st.spinner(
+                                            "Удаление из закладок..."
+                                        ):
+                                            if remove_bookmark(
+                                                st.session_state.token,
+                                                article_id
+                                            ):
+                                                tmp = st.session_state
+                                                tmp.bookmarks_dirty = True
                                                 st.success(
-                                                    "Статья удалена из избранного!")
+                                                    "Статья удалена "
+                                                    "из избранного!"
+                                                )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Ошибка при удалении из избранного.")
+                                                    "Ошибка при удалении "
+                                                    "из избранного."
+                                                )
                                 else:
-                                    if st.button("🔖 В избранное", key=f"bookmark_{article_id}_{idx}"):
-                                        with st.spinner("Добавление в закладки..."):
-                                            if add_bookmark(st.session_state.token, article_id):
-                                                st.session_state.bookmarks_dirty = True
+                                    if st.button(
+                                        "🔖 В избранное",
+                                        key=f"bookmark_{article_id}_{idx}"
+                                    ):
+                                        with st.spinner(
+                                            "Добавление в закладки..."
+                                        ):
+                                            if add_bookmark(
+                                                st.session_state.token,
+                                                article_id
+                                            ):
+                                                tst = st.session_state
+                                                tst.bookmarks_dirty = True
                                                 st.success(
-                                                    "Статья добавлена в избранное!")
+                                                    "Статья добавлена "
+                                                    "в избранное!"
+                                                )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Ошибка при добавлении в избранное.")
+                                                    "Ошибка при добавлении "
+                                                    "в избранное."
+                                                )
                             st.markdown(
-                                f"<a href='{link}' target='_blank' style='display:inline-block; padding:8px 18px; background:#4361EE; color:white; border-radius:6px; text-decoration:none; font-size:0.98em; margin-top:8px;'>Читать в Telegram</a>", unsafe_allow_html=True)
+                                (
+                                    f"<a href='{link}' target='_blank' "
+                                    f"style='display:inline-block; "
+                                    f"padding:8px 18px; "
+                                    f"background:#4361EE; color:white; "
+                                    f"border-radius:6px; "
+                                    f"text-decoration:none; font-size:0.98em; "
+                                    f"margin-top:8px;'>"
+                                    "Читать в Telegram</a>"
+                                ),
+                                unsafe_allow_html=True
+                            )
                         st.markdown("</div>", unsafe_allow_html=True)
             else:
                 st.warning(
-                    f"Нет статей для выбранной категории и/или поискового запроса в канале {channel['channel_alias']}.")
+                    (
+                        f"Нет статей для выбранной категории "
+                        f"и/или поискового запроса в канале "
+                        f"{channel['channel_alias']}."
+                    )
+                )
         if not any_articles:
-            st.info("Нет статей, соответствующих выбранным фильтрам или поисковому запросу. Попробуйте изменить фильтры или обновить статьи.", icon="ℹ️")
+            st.info(
+                (
+                    "Нет статей, соответствующих выбранным фильтрам "
+                    "или поисковому запросу. "
+                    "Попробуйте изменить фильтры или обновить статьи."
+                ),
+                icon="ℹ️"
+            )
 
 
 if __name__ == "__main__":
