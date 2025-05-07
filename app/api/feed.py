@@ -1,14 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    BackgroundTasks,
+    status
+)
 from sqlalchemy.orm import Session
-from typing import List
-import uuid
+# from typing import List
+# import uuid
 from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 
 from app.db.database import get_db
-from app.db.crud import add_user_channel, get_user_channels, create_or_update_article, get_articles, get_article_by_url, add_bookmark, remove_bookmark, get_user_bookmarks, is_bookmarked
+from app.db.crud import (
+    add_user_channel, get_user_channels,
+    create_or_update_article, get_articles,
+    get_article_by_url, add_bookmark,
+    remove_bookmark, get_user_bookmarks
+)
 from app.schemas.channel import ChannelCreate, ChannelResponse
 from app.core.dependencies import get_current_active_user
 from app.db.models import User, NewsArticle as NewsArticleModel
@@ -32,7 +44,7 @@ def process_channel_articles(channel_alias: str, db: Session):
         # RSS Feed parsing
         response = requests.get(rss_url, headers=headers)
         rss_feed = feedparser.parse(response.content)
-        
+
         for entry in rss_feed.entries:
             # Check for duplicate by URL
             article_url = entry.get("link", "")
@@ -42,68 +54,71 @@ def process_channel_articles(channel_alias: str, db: Session):
             html_content = entry.get("description", "")
             soup = BeautifulSoup(html_content, "html.parser")
             plain_text = soup.get_text()
-            
+
             # Generate AI summary and category
             ai_summary = generate_article_summary(plain_text)
-            category = generate_article_category(plain_text, entry.get("title", ""))
-            
+            category = generate_article_category(
+                plain_text, entry.get("title", ""))
+
             # Prepare article data
             article_data = {
                 "title": entry.get("title", ""),
                 "content": plain_text,
                 "url": article_url,
                 "source": channel_alias,
-                "published_date": datetime.strptime(entry.get("published", datetime.now().isoformat()), 
-                                                   "%a, %d %b %Y %H:%M:%S %Z") 
-                                 if "published" in entry else datetime.now(),
+                "published_date": datetime.strptime(entry.get("published", datetime.now().isoformat()),
+                                                    "%a, %d %b %Y %H:%M:%S %Z")
+                if "published" in entry else datetime.now(),
                 "ai_summary": ai_summary,
                 "category": category
             }
-            
+
             # Create or update article in database
             create_or_update_article(db, article_data)
-            
+
     except Exception as e:
         print(f"Error processing channel {channel_alias}: {str(e)}")
 
 
 @router.post("/", response_model=ChannelResponse)
 def create_channel(
-    channel: ChannelCreate, 
+    channel: ChannelCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Add a new channel to user's feed and process its articles.
-    
+
     Parameters:
     - **channel**: Channel information containing the channel alias
-    
+
     Returns:
     - **Channel information**: Created channel details including ID
-    
+
     Raises:
     - **401 Unauthorized**: When the user is not authenticated
-    
+
     Example request:
     ```json
     {
       "Channel_alias": "@channelname"
     }
     ```
-    
+
     Notes:
     - Adds the channel to the user's subscriptions
     - Starts a background task to fetch and store articles
     - Generates AI summaries for articles
     """
     # Add channel to user's subscriptions
-    channel_record = add_user_channel(db=db, user_id=str(current_user.id), channel_alias=channel.Channel_alias)
-    
+    channel_record = add_user_channel(db=db, user_id=str(
+        current_user.id), channel_alias=channel.Channel_alias)
+
     # Start background task to process articles
-    background_tasks.add_task(process_channel_articles, channel.Channel_alias, db)
-    
+    background_tasks.add_task(process_channel_articles,
+                              channel.Channel_alias, db)
+
     return channel_record
 
 
@@ -111,22 +126,24 @@ def create_channel(
 def get_channels_with_articles(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
-    generate_summaries: bool = Query(False, description="Generate AI summaries for articles"),
-    generate_categories: bool = Query(False, description="Generate AI categories for articles")
+    generate_summaries: bool = Query(
+        False, description="Generate AI summaries for articles"),
+    generate_categories: bool = Query(
+        False, description="Generate AI categories for articles")
 ):
     """
     Get all channels and their articles for the authenticated user.
-    
+
     Parameters:
     - **generate_summaries** (query, optional): Flag to generate AI summaries for articles
     - **generate_categories** (query, optional): Flag to generate AI categories for articles
-    
+
     Returns:
     - **List of channels with articles**: Each channel includes its articles with metadata
-    
+
     Raises:
     - **401 Unauthorized**: When the user is not authenticated
-    
+
     Example response:
     ```json
     [
@@ -150,12 +167,12 @@ def get_channels_with_articles(
     """
     # Get all the user's channels from the DB
     channels = get_user_channels(db=db, user_id=str(current_user.id))
-    
+
     if not channels:
         return []
-    
+
     feed_results = []
-    
+
     # Process unique channels only
     unique_channels = {}
     for channel in channels:
@@ -192,30 +209,32 @@ def update_all_channels(
 ):
     """
     Trigger an update to fetch new articles for all user's channels.
-    
+
     Returns:
     - **Message**: Confirmation that update has been started
-    
+
     Raises:
     - **401 Unauthorized**: When the user is not authenticated
     - **404 Not Found**: When no channels are found for the user
-    
+
     Example response:
     ```json
     {
       "message": "Update started for all channels."
     }
     ```
-    
+
     Notes:
     - This is an asynchronous operation using background tasks
     - Articles are fetched from Telegram channels via RSS
     """
     channels = get_user_channels(db=db, user_id=str(current_user.id))
     if not channels:
-        raise HTTPException(status_code=404, detail="No channels found for user.")
+        raise HTTPException(
+            status_code=404, detail="No channels found for user.")
     for channel in channels:
-        background_tasks.add_task(process_channel_articles, channel.channel_alias, db)
+        background_tasks.add_task(
+            process_channel_articles, channel.channel_alias, db)
     return {"message": "Update started for all channels."}
 
 
@@ -223,17 +242,17 @@ def update_all_channels(
 def add_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     """
     Add an article to user's bookmarks.
-    
+
     Parameters:
     - **article_id** (path): ID of the article to bookmark
-    
+
     Returns:
     - **Bookmark**: Created bookmark information
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
     - **404 Not Found**: When article is not found
-    
+
     Example response:
     ```json
     {
@@ -246,17 +265,18 @@ def add_article_bookmark(article_id: int, db: Session = Depends(get_db), current
     """
     return add_bookmark(db, str(current_user.id), article_id)
 
+
 @router.delete("/bookmarks/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     """
     Remove an article from user's bookmarks.
-    
+
     Parameters:
     - **article_id** (path): ID of the article to remove from bookmarks
-    
+
     Returns:
     - No content response (204)
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
     - **404 Not Found**: When bookmark is not found
@@ -266,17 +286,18 @@ def delete_article_bookmark(article_id: int, db: Session = Depends(get_db), curr
         raise HTTPException(status_code=404, detail="Bookmark not found.")
     return
 
+
 @router.get("/bookmarks", response_model=list[NewsArticle])
 def list_user_bookmarks(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     """
     List all articles bookmarked by the current user.
-    
+
     Returns:
     - **List of NewsArticle**: All bookmarked articles with their details
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
-    
+
     Example response:
     ```json
     [
@@ -297,5 +318,6 @@ def list_user_bookmarks(db: Session = Depends(get_db), current_user: User = Depe
     article_ids = [b.article_id for b in bookmarks]
     if not article_ids:
         return []
-    articles = db.query(NewsArticleModel).filter(NewsArticleModel.id.in_(article_ids)).all()
+    articles = db.query(NewsArticleModel).filter(
+        NewsArticleModel.id.in_(article_ids)).all()
     return articles

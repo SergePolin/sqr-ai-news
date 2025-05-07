@@ -1,4 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, UUID, Boolean, ForeignKey
+from sqlalchemy import (
+    Column, Integer, String,
+    Text, DateTime, Float,
+    UUID, Boolean, ForeignKey
+)
 from sqlalchemy.sql import func
 import uuid
 
@@ -16,7 +20,7 @@ class NewsArticle(Base):
     published_date = Column(DateTime)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+
     # AI-related fields
     sentiment_score = Column(Float, nullable=True)
     category = Column(String(50), nullable=True)
@@ -32,7 +36,7 @@ class UserChannels(Base):
     channel_alias = Column(String(255), index=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+
 
 class User(Base):
     __tablename__ = "users"
@@ -50,6 +54,6 @@ class Bookmark(Base):
     __tablename__ = "bookmarks"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String(255), index=True, nullable=False)
-    article_id = Column(Integer, ForeignKey("news_articles.id"), nullable=False)
+    article_id = Column(Integer, ForeignKey(
+        "news_articles.id"), nullable=False)
     created_at = Column(DateTime, default=func.now())
-

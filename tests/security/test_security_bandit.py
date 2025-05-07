@@ -17,10 +17,12 @@ def run_bandit_scan():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_dir = os.path.join(os.path.dirname(__file__), "reports")
     os.makedirs(report_dir, exist_ok=True)
-    
-    json_report_path = os.path.join(report_dir, f"bandit_report_{timestamp}.json")
-    html_report_path = os.path.join(report_dir, f"bandit_report_{timestamp}.html")
-    
+
+    json_report_path = os.path.join(
+        report_dir, f"bandit_report_{timestamp}.json")
+    html_report_path = os.path.join(
+        report_dir, f"bandit_report_{timestamp}.html")
+
     # Run bandit scan with JSON output
     print("Running Bandit security scan...")
     cmd = [
@@ -32,14 +34,14 @@ def run_bandit_scan():
         "-c", "bandit.yaml",  # Optional: use a custom config file
         "-ll",  # Report only high and medium severity issues
     ]
-    
+
     try:
         subprocess.run(cmd, check=True)
         print(f"Bandit scan completed. Report saved to {json_report_path}")
     except subprocess.CalledProcessError as e:
         print(f"Bandit scan failed with error code {e.returncode}")
         return False
-    
+
     # Generate HTML report
     cmd = [
         "bandit",
@@ -50,28 +52,30 @@ def run_bandit_scan():
         "-c", "bandit.yaml",  # Optional: use a custom config file
         "-ll",  # Report only high and medium severity issues
     ]
-    
+
     try:
         subprocess.run(cmd, check=True)
         print(f"HTML report generated at {html_report_path}")
     except subprocess.CalledProcessError:
         print(f"Failed to generate HTML report")
-    
+
     # Parse JSON report to check for critical issues
     try:
         with open(json_report_path, 'r') as f:
             report_data = json.load(f)
-        
+
         # Check for high severity issues
         high_severity_issues = [
             result for result in report_data.get('results', [])
             if result.get('issue_severity') == 'HIGH'
         ]
-        
+
         if high_severity_issues:
-            print(f"WARNING: {len(high_severity_issues)} high severity issues found!")
+            print(
+                f"WARNING: {len(high_severity_issues)} high severity issues found!")
             for issue in high_severity_issues:
-                print(f"- {issue.get('filename')}:{issue.get('line_number')} - {issue.get('issue_text')}")
+                print(
+                    f"- {issue.get('filename')}:{issue.get('line_number')} - {issue.get('issue_text')}")
             return False
         else:
             print("No high severity issues found.")
@@ -83,4 +87,4 @@ def run_bandit_scan():
 
 if __name__ == "__main__":
     success = run_bandit_scan()
-    sys.exit(0 if success else 1) 
+    sys.exit(0 if success else 1)

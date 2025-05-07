@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -22,19 +22,19 @@ def read_articles(
 ):
     """
     Retrieve news articles with optional filtering.
-    
+
     Parameters:
     - **skip** (query, optional): Number of articles to skip (pagination offset). Default: 0
     - **limit** (query, optional): Maximum number of articles to return. Default: 100
     - **source** (query, optional): Filter articles by news source
     - **category** (query, optional): Filter articles by article category
-    
+
     Returns:
     - **List of NewsArticle**: Articles matching the filter criteria
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
-    
+
     Example response:
     ```json
     [
@@ -51,29 +51,30 @@ def read_articles(
     ]
     ```
     """
-    articles = crud.get_articles(db, skip=skip, limit=limit, source=source, category=category)
+    articles = crud.get_articles(
+        db, skip=skip, limit=limit, source=source, category=category)
     return articles
 
 
 @router.get("/articles/{article_id}", response_model=NewsArticle)
 def read_article(
-    article_id: int, 
+    article_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Retrieve a specific news article by ID.
-    
+
     Parameters:
     - **article_id** (path): The ID of the article to retrieve
-    
+
     Returns:
     - **NewsArticle**: The requested article details
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
     - **404 Not Found**: When article with the specified ID doesn't exist
-    
+
     Example response:
     ```json
     {
@@ -101,13 +102,13 @@ def get_sources(
 ):
     """
     Get a list of all available news sources.
-    
+
     Returns:
     - **List of strings**: All unique news sources in the database
-    
+
     Raises:
     - **401 Unauthorized**: When user is not authenticated
-    
+
     Example response:
     ```json
     [
@@ -119,4 +120,4 @@ def get_sources(
     """
     # Query all distinct sources from the database
     sources = db.query(crud.NewsArticle.source).distinct().all()
-    return [source[0] for source in sources if source[0]] 
+    return [source[0] for source in sources if source[0]]

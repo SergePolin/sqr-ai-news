@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, Field
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
@@ -42,4 +42,4 @@ class Bookmark(BaseModel):
 
 
 # Alias for backward compatibility with tests and other modules
-NewsArticleBase = ArticleBase 
+NewsArticleBase = ArticleBase

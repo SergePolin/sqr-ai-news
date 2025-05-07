@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+# from typing import Optional
 from uuid import UUID
 
 
@@ -17,6 +17,6 @@ class ChannelResponse(BaseModel):
     user_id: str
     channel_alias: str
     created_at: datetime
-    
+
     class Config:
         orm_mode = True

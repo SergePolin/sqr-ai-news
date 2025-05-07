@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+# from sqlalchemy import and_
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+# from datetime import datetime
 
 from app.db.models import NewsArticle, UserChannels, User, Bookmark
 from app.core.security import get_password_hash, verify_password
@@ -9,8 +9,8 @@ from app.schemas.user import UserCreate
 
 
 def get_articles(
-    db: Session, 
-    skip: int = 0, 
+    db: Session,
+    skip: int = 0,
     limit: int = 100,
     source: Optional[str] = None,
     category: Optional[str] = None
@@ -19,13 +19,13 @@ def get_articles(
     Get articles with optional filtering by source and category.
     """
     query = db.query(NewsArticle)
-    
+
     if source:
         query = query.filter(NewsArticle.source == source)
-    
+
     if category:
         query = query.filter(NewsArticle.category == category)
-    
+
     return query.offset(skip).limit(limit).all()
 
 
@@ -46,26 +46,26 @@ def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
 def create_or_update_article(db: Session, article_data: Dict[str, Any]) -> NewsArticle:
     """
     Create a new article or update if it already exists (by URL).
-    
+
     Args:
         db: Database session
         article_data: Dictionary containing article data
-        
+
     Returns:
         Created or updated NewsArticle object
     """
     # Check if article already exists
     if 'url' not in article_data:
         raise ValueError("Article data must contain URL")
-        
+
     existing_article = get_article_by_url(db, article_data['url'])
-    
+
     if existing_article:
         # Update existing article
         for key, value in article_data.items():
             if hasattr(existing_article, key) and key != 'id':
                 setattr(existing_article, key, value)
-        
+
         db.commit()
         db.refresh(existing_article)
         return existing_article
@@ -103,7 +103,8 @@ def get_channel(db: Session, channel_id: str):
 
 # Update - Обновление подписки
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
-    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(
+        UserChannels.id == channel_id).first()
     if db_channel:
         db_channel.channel_alias = new_channel_alias
         db.commit()
@@ -113,7 +114,8 @@ def update_channel(db: Session, channel_id: str, new_channel_alias: str):
 
 # Delete - Удаление подписки
 def delete_channel(db: Session, channel_id: str):
-    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(
+        UserChannels.id == channel_id).first()
     if db_channel:
         db.delete(db_channel)
         db.commit()
@@ -173,7 +175,8 @@ def add_bookmark(db: Session, user_id: str, article_id: int) -> Bookmark:
 
 
 def remove_bookmark(db: Session, user_id: str, article_id: int) -> bool:
-    bookmark = db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first()
+    bookmark = db.query(Bookmark).filter_by(
+        user_id=user_id, article_id=article_id).first()
     if bookmark:
         db.delete(bookmark)
         db.commit()
@@ -186,4 +189,4 @@ def get_user_bookmarks(db: Session, user_id: str) -> list[Bookmark]:
 
 
 def is_bookmarked(db: Session, user_id: str, article_id: int) -> bool:
-    return db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first() is not None 
+    return db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first() is not None

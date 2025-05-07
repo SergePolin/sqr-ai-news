@@ -1,8 +1,8 @@
 """
 API tests for routes.
 """
-import pytest
-from fastapi.testclient import TestClient
+# import pytest
+# from fastapi.testclient import TestClient
 
 
 def test_root_endpoint(client):
@@ -33,7 +33,8 @@ def test_get_articles_endpoint(client, sample_articles, auth_token):
 def test_get_articles_with_filter(client, sample_articles, auth_token):
     """Test getting articles with filter."""
     headers = {"Authorization": f"Bearer {auth_token}"}
-    response = client.get("/api/news/articles/?category=politics", headers=headers)
+    response = client.get(
+        "/api/news/articles/?category=politics", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -57,4 +58,4 @@ def test_get_article_not_found(client, auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/api/news/articles/999", headers=headers)
     assert response.status_code == 404
-    assert "detail" in response.json() 
+    assert "detail" in response.json()

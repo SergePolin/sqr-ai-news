@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-import signal
-import sys
+# import signal
+# import sys
 import os
 from dotenv import load_dotenv
 
@@ -39,8 +39,9 @@ app.include_router(news_router)
 app.include_router(feed_router)
 app.include_router(auth_router)
 
+
 @app.get(
-    "/", 
+    "/",
     response_model=dict,
     status_code=status.HTTP_200_OK,
     summary="Root endpoint",
@@ -50,11 +51,12 @@ app.include_router(auth_router)
 async def root():
     """
     Root endpoint for the API
-    
+
     Returns:
         dict: A welcome message
     """
     return {"message": "Welcome to AI-Powered News Aggregator API"}
+
 
 @app.get(
     "/health",
@@ -87,12 +89,12 @@ async def health_check():
     azure_openai_key = os.environ.get("AZURE_OPENAI_KEY", "")
     azure_openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
     openai_api_key = os.environ.get("OPENAI_API_KEY", "")
-    
+
     ai_status = {
         "azure_openai_configured": bool(azure_openai_key and azure_openai_endpoint),
         "openai_configured": bool(openai_api_key)
     }
-    
+
     return {
         "status": "ok",
         "ai_status": ai_status
@@ -100,4 +102,4 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

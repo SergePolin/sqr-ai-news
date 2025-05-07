@@ -32,7 +32,8 @@ def test_engine():
 @pytest.fixture(scope="function")
 def test_db(test_engine):
     """Create a test database session."""
-    TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+    TestSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_engine)
     test_db = TestSessionLocal()
     try:
         yield test_db
@@ -44,13 +45,13 @@ def test_db(test_engine):
 @pytest.fixture(scope="function")
 def client(test_db):
     """Create a test client with the test database."""
-    
+
     def _get_test_db():
         try:
             yield test_db
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = _get_test_db
     with TestClient(app) as client:
         yield client
@@ -78,16 +79,16 @@ def sample_articles(test_db):
             published_date=datetime.now(),
         ),
     ]
-    
+
     for article in articles:
         test_db.add(article)
     test_db.commit()
-    
+
     for article in articles:
         test_db.refresh(article)
-    
+
     yield articles
-    
+
     # Clean up
     for article in articles:
         test_db.delete(article)
@@ -113,4 +114,4 @@ def auth_token(client):
     })
     assert response.status_code == 200, f"Login failed: {response.text}"
     token = response.json()["access_token"]
-    return token 
+    return token
