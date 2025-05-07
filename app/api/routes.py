@@ -24,8 +24,10 @@ def read_articles(
     Retrieve news articles with optional filtering.
 
     Parameters:
-    - **skip** (query, optional): Number of articles to skip (pagination offset). Default: 0
-    - **limit** (query, optional): Maximum number of articles to return. Default: 100
+    - **skip** (query, optional):
+      Number of articles to skip (pagination offset). Default: 0
+    - **limit** (query, optional):
+      Maximum number of articles to return. Default: 100
     - **source** (query, optional): Filter articles by news source
     - **category** (query, optional): Filter articles by article category
 

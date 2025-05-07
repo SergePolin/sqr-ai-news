@@ -11,7 +11,10 @@ from app.schemas.user import TokenData
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
     """
     Get the current user from the JWT token.
     """

@@ -78,7 +78,10 @@ async def root():
             "description": "API is unhealthy",
             "content": {
                 "application/json": {
-                    "example": {"status": "error", "details": "Database connection failed"}
+                    "example": {
+                        "status": "error",
+                        "details": "Database connection failed"
+                    }
                 }
             }
         }
@@ -91,7 +94,9 @@ async def health_check():
     openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
     ai_status = {
-        "azure_openai_configured": bool(azure_openai_key and azure_openai_endpoint),
+        "azure_openai_configured": bool(
+            azure_openai_key and azure_openai_endpoint
+        ),
         "openai_configured": bool(openai_api_key)
     }
 

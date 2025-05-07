@@ -5,13 +5,18 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.db.database import get_db
-from app.db.crud import authenticate_user, create_user, get_user_by_email, get_user_by_username
+from app.db.crud import (
+    authenticate_user, create_user,
+    get_user_by_email, get_user_by_username
+)
 from app.schemas.user import Token, UserCreate, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     Register a new user.

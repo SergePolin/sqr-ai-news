@@ -35,9 +35,16 @@ def process_channel_articles(channel_alias: str, db: Session):
     Background task to fetch and process articles from a channel.
     """
     # Form the request URL for RSShub
-    rss_url = f"https://rsshub.app/telegram/channel/{channel_alias.lstrip('@')}"
+    rss_url = (
+        f"https://rsshub.app/telegram/channel/"
+        f"{channel_alias.lstrip('@')}"
+    )
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/115.0.0.0 Safari/537.36"
+        )
     }
 
     try:
@@ -66,8 +73,10 @@ def process_channel_articles(channel_alias: str, db: Session):
                 "content": plain_text,
                 "url": article_url,
                 "source": channel_alias,
-                "published_date": datetime.strptime(entry.get("published", datetime.now().isoformat()),
-                                                    "%a, %d %b %Y %H:%M:%S %Z")
+                "published_date": datetime.strptime(
+                    entry.get("published", datetime.now().isoformat()),
+                    "%a, %d %b %Y %H:%M:%S %Z"
+                )
                 if "published" in entry else datetime.now(),
                 "ai_summary": ai_summary,
                 "category": category
@@ -135,11 +144,14 @@ def get_channels_with_articles(
     Get all channels and their articles for the authenticated user.
 
     Parameters:
-    - **generate_summaries** (query, optional): Flag to generate AI summaries for articles
-    - **generate_categories** (query, optional): Flag to generate AI categories for articles
+    - **generate_summaries** (query, optional):
+        Flag to generate AI summaries for articles
+    - **generate_categories** (query, optional):
+        Flag to generate AI categories for articles
 
     Returns:
-    - **List of channels with articles**: Each channel includes its articles with metadata
+    - **List of channels with articles**:
+        Each channel includes its articles with metadata
 
     Raises:
     - **401 Unauthorized**: When the user is not authenticated
@@ -189,7 +201,11 @@ def get_channels_with_articles(
                 "title": article.title,
                 "description": article.content,
                 "link": article.url,
-                "published_date": article.published_date.isoformat() if article.published_date else None,
+                "published_date": (
+                    article.published_date.isoformat()
+                    if article.published_date
+                    else None
+                ),
                 "ai_summary": article.ai_summary,
                 "category": article.category
             })
@@ -238,8 +254,14 @@ def update_all_channels(
     return {"message": "Update started for all channels."}
 
 
-@router.post("/bookmarks/{article_id}", response_model=Bookmark, status_code=status.HTTP_201_CREATED)
-def add_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+@router.post(
+    "/bookmarks/{article_id}", response_model=Bookmark,
+    status_code=status.HTTP_201_CREATED
+)
+def add_article_bookmark(
+    article_id: int, db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """
     Add an article to user's bookmarks.
 
@@ -266,8 +288,14 @@ def add_article_bookmark(article_id: int, db: Session = Depends(get_db), current
     return add_bookmark(db, str(current_user.id), article_id)
 
 
-@router.delete("/bookmarks/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_article_bookmark(article_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+@router.delete(
+    "/bookmarks/{article_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_article_bookmark(
+    article_id: int, db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """
     Remove an article from user's bookmarks.
 
@@ -288,7 +316,10 @@ def delete_article_bookmark(article_id: int, db: Session = Depends(get_db), curr
 
 
 @router.get("/bookmarks", response_model=list[NewsArticle])
-def list_user_bookmarks(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+def list_user_bookmarks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """
     List all articles bookmarked by the current user.
 

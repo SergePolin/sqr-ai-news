@@ -43,7 +43,10 @@ def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
     return db.query(NewsArticle).filter(NewsArticle.url == url).first()
 
 
-def create_or_update_article(db: Session, article_data: Dict[str, Any]) -> NewsArticle:
+def create_or_update_article(
+    db: Session,
+    article_data: Dict[str, Any]
+) -> NewsArticle:
     """
     Create a new article or update if it already exists (by URL).
 
@@ -154,7 +157,10 @@ def create_user(db: Session, user: UserCreate) -> User:
     return db_user
 
 
-def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
+def authenticate_user(
+    db: Session,
+    username: str, password: str
+) -> Optional[User]:
     """
     Authenticate a user by username and password.
     """
@@ -189,4 +195,9 @@ def get_user_bookmarks(db: Session, user_id: str) -> list[Bookmark]:
 
 
 def is_bookmarked(db: Session, user_id: str, article_id: int) -> bool:
-    return db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first() is not None
+    return (
+        db.query(Bookmark)
+        .filter_by(user_id=user_id, article_id=article_id)
+        .first()
+        is not None
+    )

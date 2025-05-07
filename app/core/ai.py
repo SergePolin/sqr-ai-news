@@ -7,7 +7,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Azure OpenAI configuration (update to use only Azure, as per project requirements)
+# Azure OpenAI configuration
+# (update to use only Azure, as per project requirements)
 # Expected environment variables:
 #   AZURE_OPENAI_ENDPOINT
 #   AZURE_OPENAI_API_VERSION
@@ -16,8 +17,11 @@ logger = logging.getLogger(__name__)
 AZURE_OPENAI_KEY = os.environ.get("AZURE_OPENAI_KEY", "")
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_API_VERSION = os.environ.get(
-    "AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
-AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
+    "AZURE_OPENAI_API_VERSION", "2025-01-01-preview"
+)
+AZURE_OPENAI_DEPLOYMENT = os.environ.get(
+    "AZURE_OPENAI_DEPLOYMENT", "gpt-4o"
+)
 
 # Regular OpenAI configuration (fallback)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -42,14 +46,19 @@ if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
         client = None
 else:
     logger.warning(
-        "Azure OpenAI credentials missing. Set AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT.")
+        "Azure OpenAI credentials missing. Set AZURE_OPENAI_KEY and "
+        "AZURE_OPENAI_ENDPOINT."
+    )
 
 if client is None:
     logger.warning(
         "No OpenAI credentials provided. AI summarization will be disabled.")
 
 
-def generate_article_summary(content: str, max_length: int = 200) -> Optional[str]:
+def generate_article_summary(
+    content: str,
+    max_length: int = 200
+) -> Optional[str]:
     """
     Generate a summary of an article using OpenAI.
 
@@ -70,20 +79,29 @@ def generate_article_summary(content: str, max_length: int = 200) -> Optional[st
         return None
 
     try:
-        prompt = f"""Summarize the following news article in a concise summary.
-        Keep the summary informative and factual. Maximum length: {max_length} characters.
+        prompt = (
+            "Summarize the following news article in a concise summary.\n"
+            "Keep the summary informative and factual. Maximum length: "
+            f"{max_length} characters.\n\n"
 
-        Article:
-        {content}
+            "Article:\n"
+            f"{content}\n\n"
 
-        Summary:"""
+            "Summary:"
+        )
 
         # Different API calls based on client type
         if client_type == 'azure':
             response = client.chat.completions.create(
                 model=AZURE_OPENAI_DEPLOYMENT,
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that summarizes news articles."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a helpful assistant "
+                            "that summarizes news articles."
+                        )
+                    },
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.5,
@@ -94,7 +112,13 @@ def generate_article_summary(content: str, max_length: int = 200) -> Optional[st
             response = client.chat.completions.create(
                 model=OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that summarizes news articles."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a helpful assistant "
+                            "that summarizes news articles."
+                        )
+                    },
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.5,
@@ -138,22 +162,31 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
 
         categories_str = ", ".join(categories)
 
-        prompt = f"""Categorize the following news article into ONE of these categories: {categories_str}.
-        Respond with just the category name, nothing else.
+        prompt = (
+            "Categorize the following news article into ONE "
+            f"of these categories: {categories_str}. "
+            "Respond with just the category name, nothing else.\n\n"
 
-        Title: {title}
+            f"Title: {title}\n\n"
 
-        Article:
-        {content[:1000]}  # Using first 1000 chars for efficiency
+            "Article:\n"
+            f"{content[:1000]}  # Using first 1000 chars for efficiency\n\n"
 
-        Category:"""
+            "Category:"
+        )
 
         # Different API calls based on client type
         if client_type == 'azure':
             response = client.chat.completions.create(
                 model=AZURE_OPENAI_DEPLOYMENT,
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that categorizes news articles."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a helpful assistant "
+                            "that categorizes news articles."
+                        )
+                    },
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
@@ -164,7 +197,13 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
             response = client.chat.completions.create(
                 model=OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that categorizes news articles."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a helpful assistant "
+                            "that categorizes news articles."
+                        )
+                    },
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
@@ -174,14 +213,19 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
 
         category = response.choices[0].message.content.strip()
 
-        # Ensure the returned category is in our predefined list (case-insensitive)
+        # Ensure the returned category is in our
+        # predefined list (case-insensitive)
         for valid_category in categories:
             if valid_category.lower() == category.lower():
                 return valid_category
 
-        # If no match, use the first valid category that contains the returned text
+        # If no match, use the first valid category
+        # that contains the returned text
         for valid_category in categories:
-            if valid_category.lower() in category.lower() or category.lower() in valid_category.lower():
+            if (
+                valid_category.lower() in category.lower()
+                or category.lower() in valid_category.lower()
+            ):
                 return valid_category
 
         # Fallback to "Other" if no match
