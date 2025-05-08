@@ -387,18 +387,28 @@ class MockChannel:
         self.channel_alias = "@test_channel"
 
 
-def test_process_new_articles(client, mock_db_session):
+def test_process_new_articles(client, mock_db_session, test_user, clean_user_channels):
     """Test processing new articles."""
-    # Mock get_channel
-    with patch("app.db.crud.get_channel", return_value=MockChannel()):
-        # Mock get_user_channel to return True
-        with patch("app.db.crud.get_user_channel", return_value=True):
-            # Mock process_articles
-            with patch(
-                "app.api.feed.process_channel_articles", return_value=None
-            ) as mock_process:
-                # Call the API
-                response = client.post("/api/feed/process/123")
-                # Check response and verify mock was called
-                assert response.status_code == 200
-                mock_process.assert_called_once()  # Use mock to avoid unused variable
+    token = test_user["token"]
+
+    # First create a channel - this is necessary for the update to work
+    channel_data = {"Channel_alias": "@test_channel"}
+
+    # Mock the process_channel_articles function to avoid actual API calls
+    with patch("app.api.feed.process_channel_articles"):
+        # Create a channel first
+        client.post(
+            "/feed/", json=channel_data, headers={"Authorization": f"Bearer {token}"}
+        )
+
+    # Now test the update endpoint with proper mocking
+    with patch("app.api.feed.process_channel_articles") as mock_process:
+        response = client.post(
+            "/feed/update", headers={"Authorization": f"Bearer {token}"}
+        )
+
+        # Check response and verify mock was called
+        assert response.status_code == 200
+        assert "message" in response.json()
+        assert "Update started" in response.json()["message"]
+        assert mock_process.call_count >= 1

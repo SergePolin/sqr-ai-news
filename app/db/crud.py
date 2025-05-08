@@ -107,6 +107,29 @@ def get_channel(db: Session, channel_id: str):
     return db.query(UserChannels).filter(UserChannels.id == channel_id).first()
 
 
+def get_user_channel(
+    db: Session, user_id: str, channel_alias: str
+) -> Optional[UserChannels]:
+    """
+    Get a specific channel for a user.
+
+    Args:
+        db: Database session
+        user_id: User ID
+        channel_alias: Channel alias to check
+
+    Returns:
+        UserChannels object if found, None otherwise
+    """
+    return (
+        db.query(UserChannels)
+        .filter(
+            UserChannels.user_id == user_id, UserChannels.channel_alias == channel_alias
+        )
+        .first()
+    )
+
+
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
     db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:

@@ -3,6 +3,7 @@ import requests
 import re
 import os
 from bs4 import BeautifulSoup
+
 # import html
 import time
 
@@ -17,14 +18,11 @@ def register_user(username, email, password):
     payload = {"username": username, "email": email, "password": password}
     try:
         response = requests.post(
-            f"{API_URL}/auth/register",
-            json=payload,
-            timeout=REQUEST_TIMEOUT
+            f"{API_URL}/auth/register", json=payload, timeout=REQUEST_TIMEOUT
         )
-        return response                
+        return response
     except requests.exceptions.ConnectionError:
-        return None                      
-
+        return None
 
 
 def login_user(username, password):
@@ -32,7 +30,7 @@ def login_user(username, password):
     response = requests.post(
         f"{API_URL}/auth/login",
         data={"username": username, "password": password},
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
     return response
 
@@ -49,7 +47,7 @@ def add_channel(channel_name, token):
     response = requests.post(
         f"{API_URL}/feed",
         json={"Channel_alias": f"@{channel_name}"},
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     if response.status_code == 200:
@@ -66,11 +64,11 @@ def clean_html(html_content):
 
     # Use BeautifulSoup to parse HTML if possible
     try:
-        soup = BeautifulSoup(html_content, 'html.parser')
+        soup = BeautifulSoup(html_content, "html.parser")
         return soup.get_text()
     except Exception:
         # Fallback to regex replacements if BeautifulSoup fails
-        text = re.sub(r'<[^>]*>', '', html_content)
+        text = re.sub(r"<[^>]*>", "", html_content)
         return text
 
 
@@ -80,7 +78,8 @@ def get_news(token, generate_summaries=False, generate_categories=False):
         return []
 
     # Custom CSS for better styling
-    st.markdown("""
+    st.markdown(
+        """
     <style>
     .article-card {
         background-color: rgba(255, 255, 255, 0.8);
@@ -130,12 +129,14 @@ def get_news(token, generate_summaries=False, generate_categories=False):
         font-weight: 600;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     response = requests.get(
         f"{API_URL}/feed?generate_summaries={str(generate_summaries).lower()}"
         f"&generate_categories={str(generate_categories).lower()}",
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     if response.status_code == 200:
@@ -143,13 +144,13 @@ def get_news(token, generate_summaries=False, generate_categories=False):
         # For each channel
         for channel in data:
             st.subheader(f"Channel: {channel['channel_alias']}")
-            articles = channel.get('articles', [])
+            articles = channel.get("articles", [])
             if articles:  # Check if there are articles
                 for idx, article in enumerate(articles):
                     # Clean description/content from HTML tags
-                    description = clean_html(article.get('description', ''))
-                    title = article.get('title', '')
-                    link = article.get('link', '#')
+                    description = clean_html(article.get("description", ""))
+                    title = article.get("title", "")
+                    link = article.get("link", "#")
 
                     # Create article card with proper layout
                     with st.container():
@@ -161,14 +162,13 @@ def get_news(token, generate_summaries=False, generate_categories=False):
                             st.markdown(f"### {title}")
 
                             # Display category if available
-                            if article.get('category'):
-                                st.markdown(
-                                    f"**Category:** {article.get('category')}")
+                            if article.get("category"):
+                                st.markdown(f"**Category:** {article.get('category')}")
 
                             # Display AI summary first if available
-                            if article.get('ai_summary'):
+                            if article.get("ai_summary"):
                                 st.markdown("**AI Summary:**")
-                                st.info(article.get('ai_summary'))
+                                st.info(article.get("ai_summary"))
 
                             # Hide full article text in an accordion
                             with st.expander("Show Full Article"):
@@ -177,8 +177,7 @@ def get_news(token, generate_summaries=False, generate_categories=False):
                         with col2:
                             # Add direct link instead of a button
                             st.markdown(
-                                f"[Read on Telegram]({link})",
-                                unsafe_allow_html=False
+                                f"[Read on Telegram]({link})", unsafe_allow_html=False
                             )
 
                         # Add separator between articles
@@ -192,17 +191,18 @@ def get_news(token, generate_summaries=False, generate_categories=False):
 
 
 def get_bookmarked_article_ids(token):
-    response = requests.get(f"{API_URL}/feed/bookmarks",
-                            headers={"Authorization": f"Bearer {token}"})
+    response = requests.get(
+        f"{API_URL}/feed/bookmarks", headers={"Authorization": f"Bearer {token}"}
+    )
     if response.status_code == 200:
-        return set(article['id'] for article in response.json())
+        return set(article["id"] for article in response.json())
     return set()
 
 
 def add_bookmark(token, article_id):
     response = requests.post(
         f"{API_URL}/feed/bookmarks/{article_id}",
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {token}"},
     )
     return response.status_code == 201
 
@@ -210,7 +210,7 @@ def add_bookmark(token, article_id):
 def remove_bookmark(token, article_id):
     response = requests.delete(
         f"{API_URL}/feed/bookmarks/{article_id}",
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {token}"},
     )
     return response.status_code == 204
 
@@ -231,11 +231,12 @@ def main():
         with st.sidebar:
             st.subheader("Log into your account")
             tab1, tab2 = st.tabs(["Login", "Register"])
-            
+
             with tab1:
                 username = st.text_input("Username", key="login_username")
                 password = st.text_input(
-                    "Password", type="password", key="login_password")
+                    "Password", type="password", key="login_password"
+                )
 
                 if st.button("Login", key="login_button"):
                     if username and password:
@@ -250,48 +251,49 @@ def main():
                             else:
                                 st.error(
                                     "Login error. "
-                                    f"({response.status_code}): {response.text}")
+                                    f"({response.status_code}): {response.text}"
+                                )
                     else:
                         st.error("Please fill in all fields.")
-            
+
             with tab2:
-        # --- input fields ---
+                # --- input fields ---
                 reg_username = st.text_input("Username", key="reg_username")
-                reg_email    = st.text_input("Email",    key="reg_email")
-                reg_password = st.text_input("Password", type="password",
-                                            key="reg_password")
+                reg_email = st.text_input("Email", key="reg_email")
+                reg_password = st.text_input(
+                    "Password", type="password", key="reg_password"
+                )
 
-        # --- action button ---
+                # --- action button ---
                 if st.button("Register", key="register_button"):
-                        if reg_username and reg_email and reg_password:
-                                with st.spinner("Registering..."):
-                                        response = register_user(
-                                                reg_username, reg_email, reg_password
-                                        )
+                    if reg_username and reg_email and reg_password:
+                        with st.spinner("Registering..."):
+                            response = register_user(
+                                reg_username, reg_email, reg_password
+                            )
 
-                                        # ↙ back‑end offline
-                                        if response is None:
-                                                st.error(
-                                                    "Cannot connect to the authentication service. "
-                                                    "Make sure the backend is running."
-                                                )
+                            # ↙ back‑end offline
+                            if response is None:
+                                st.error(
+                                    "Cannot connect to the authentication service. "
+                                    "Make sure the backend is running."
+                                )
 
-                                        # ↙ success
-                                        elif response.status_code == 201:
-                                                st.success("Registration successful! Please log in.")
+                            # ↙ success
+                            elif response.status_code == 201:
+                                st.success("Registration successful! Please log in.")
 
-                                        # ↙ API returned a validation / business error
-                                        else:
-                                                try:
-                                                        err_msg = response.json().get(
-                                                            "message", response.text
-                                                        )
-                                                except ValueError:
-                                                        err_msg = response.text
-                                                st.error(f"Registration error: {err_msg}")
-                        else:
-                                st.error("Please fill in all fields.")
-
+                            # ↙ API returned a validation / business error
+                            else:
+                                try:
+                                    err_msg = response.json().get(
+                                        "message", response.text
+                                    )
+                                except ValueError:
+                                    err_msg = response.text
+                                st.error(f"Registration error: {err_msg}")
+                    else:
+                        st.error("Please fill in all fields.")
 
     else:
         # Authenticated user view
@@ -306,46 +308,45 @@ def main():
 
         # Content for authenticated users
         st.subheader("Add new channel")
-        
+
         # Initialize suggested channel state if it doesn't exist
         if "suggested_channel" not in st.session_state:
             st.session_state.suggested_channel = ""
-            
+
         # Get channel name from session state if a suggestion was clicked
         default_channel = st.session_state.suggested_channel
-        
+
         channel_name = st.text_input(
             "Enter Telegram channel alias without @, e.g.: TechNews",
             key="channel_name",
             value=default_channel,
-            placeholder="Channel name"
+            placeholder="Channel name",
         )
 
         # Add suggested channels section
         st.markdown("### Suggested channels:")
         col1, col2, col3 = st.columns(3)
-        
+
         with col1:
             if st.button("RBC News", key="rbc_news_btn"):
                 st.session_state.suggested_channel = "rbc_news"
                 st.experimental_rerun()
-                
+
         with col2:
             if st.button("BBC Breaking", key="bbbreaking_btn"):
                 st.session_state.suggested_channel = "bbbreaking"
                 st.experimental_rerun()
-                
+
         with col3:
             if st.button("Market News", key="if_market_news_btn"):
                 st.session_state.suggested_channel = "if_market_news"
                 st.experimental_rerun()
-                
+
         # Check for prefixes and trim
         if channel_name.startswith("@"):
             channel_name = channel_name[1:]  # Remove '@'
         elif channel_name.startswith("https://t.me/"):
-            channel_name = channel_name[len(
-                "https://t.me/"):]  # Remove prefix
+            channel_name = channel_name[len("https://t.me/") :]  # Remove prefix
         else:
             channel_name = channel_name
 
@@ -363,63 +364,49 @@ def main():
             show_only_bookmarks = st.checkbox(
                 "Show only bookmarks",
                 value=False,
-                help="Show only articles you added to bookmarks."
+                help="Show only articles you added to bookmarks.",
             )
             search_query = st.text_input(
                 "🔍 Search articles:",
                 value="",
-                help=(
-                    "Enter keywords to search by title or content of the article."
-                )
+                help=("Enter keywords to search by title or content of the article."),
             )
-            if 'news_data' not in st.session_state:
+            if "news_data" not in st.session_state:
                 st.session_state.news_data = None
             # Collect all unique categories
             news_data = st.session_state.news_data or []
             categories = set()
             for channel in news_data:
-                for article in channel.get('articles', []):
-                    cat = article.get('category')
+                for article in channel.get("articles", []):
+                    cat = article.get("category")
                     if cat:
                         categories.add(cat)
             categories = sorted(list(categories))
-            categories.insert(0, 'All categories')
+            categories.insert(0, "All categories")
             selected_category = st.selectbox(
                 "📂 Filter by category:",
                 categories,
-                help="Show only articles from the selected category."
+                help="Show only articles from the selected category.",
             )
             if st.button("Reset filters"):
                 search_query = ""
-                selected_category = 'All categories'
+                selected_category = "All categories"
                 st.rerun()
             st.markdown("---")
             if st.button(
-                "Update feeds",
-                help="Get latest articles from Telegram channels."
+                "Update feeds", help="Get latest articles from Telegram channels."
             ):
                 with st.spinner("Updating articles from channels..."):
                     update_response = requests.post(
                         f"{API_URL}/feed/update",
-                        headers={
-                            "Authorization": (
-                                f"Bearer {st.session_state.token}"
-                            )
-                        }
+                        headers={"Authorization": (f"Bearer {st.session_state.token}")},
                     )
                     if update_response.status_code == 200:
-                        st.success(
-                            "Update started! "
-                            "Check news in a few seconds."
-                        )
+                        st.success("Update started! " "Check news in a few seconds.")
                     else:
-                        st.error(
-                            f"Error during update: {update_response.text}")
+                        st.error(f"Error during update: {update_response.text}")
             if (
-                st.button(
-                    "Get news",
-                    help="Load and display fresh articles."
-                )
+                st.button("Get news", help="Load and display fresh articles.")
                 or st.session_state.news_data is None
             ):
                 with st.spinner("Loading news..."):
@@ -429,40 +416,36 @@ def main():
                             "generate_summaries=true&"
                             "generate_categories=true"
                         ),
-                        headers={
-                            "Authorization": f"Bearer {st.session_state.token}"
-                        }
+                        headers={"Authorization": f"Bearer {st.session_state.token}"},
                     )
                     if response.status_code == 200:
                         st.session_state.news_data = response.json()
                         st.session_state.news_loaded = True
                         st.success("News loaded successfully!")
                     else:
-                        st.error(
-                            f"Error retrieving news: {response.text}")
+                        st.error(f"Error retrieving news: {response.text}")
                         st.session_state.news_data = []
 
         # Main content area
         news_data = st.session_state.news_data or []
         # Theme-aware text color
-        theme = st.get_option('theme.base') if hasattr(
-            st, 'get_option') else None
-        if theme == 'dark':
-            article_text_color = '#fff'
+        theme = st.get_option("theme.base") if hasattr(st, "get_option") else None
+        if theme == "dark":
+            article_text_color = "#fff"
         else:
-            article_text_color = '#222'  # dark gray for light theme
+            article_text_color = "#222"  # dark gray for light theme
         # Get bookmarks for the user
-        if (
-            'bookmarked_ids' not in st.session_state
-            or st.session_state.get('bookmarks_dirty', True)
+        if "bookmarked_ids" not in st.session_state or st.session_state.get(
+            "bookmarks_dirty", True
         ):
             with st.spinner("Loading bookmarks..."):
                 st.session_state.bookmarked_ids = get_bookmarked_article_ids(
-                    st.session_state.token)
+                    st.session_state.token
+                )
                 st.session_state.bookmarks_dirty = False
         bookmarked_ids = st.session_state.bookmarked_ids
         any_articles = False
-        
+
         # Helper function to format date and time
         def format_datetime(date_str):
             if not date_str:
@@ -470,36 +453,34 @@ def main():
             try:
                 # Parse ISO format date
                 from datetime import datetime
-                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+
+                dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
                 # Format to a readable date and time
                 return dt.strftime("%d %b %Y, %H:%M")
             except Exception:
                 return date_str
-                
+
         for channel in news_data:
-            articles = channel.get('articles', [])
-            
+            articles = channel.get("articles", [])
+
             # Sort articles by published_date (newest first)
             articles = sorted(
-                articles,
-                key=lambda x: x.get('published_date', '0'),
-                reverse=True
+                articles, key=lambda x: x.get("published_date", "0"), reverse=True
             )
-            
+
             filtered_articles = [
-                a for a in articles
+                a
+                for a in articles
                 if (
-                    selected_category == 'All categories'
-                    or a.get('category') == selected_category
-                ) and (
-                    search_query.strip() == ""
-                    or (search_query.lower() in (a.get('title') or '').lower())
-                    or (
-                        search_query.lower()
-                        in (a.get('description') or '').lower()
-                    )
+                    selected_category == "All categories"
+                    or a.get("category") == selected_category
                 )
-                and (not show_only_bookmarks or a.get('id') in bookmarked_ids)
+                and (
+                    search_query.strip() == ""
+                    or (search_query.lower() in (a.get("title") or "").lower())
+                    or (search_query.lower() in (a.get("description") or "").lower())
+                )
+                and (not show_only_bookmarks or a.get("id") in bookmarked_ids)
             ]
             st.markdown(f"### Channel: {channel['channel_alias']} ")
             st.markdown(
@@ -508,18 +489,18 @@ def main():
                     f"Articles shown: <b>{len(filtered_articles)}</b>"
                     f"</span>"
                 ),
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
             if filtered_articles:
                 any_articles = True
                 for idx, article in enumerate(filtered_articles):
-                    description = clean_html(article.get('description', ''))
-                    title = article.get('title', '')
-                    link = article.get('link', '#')
-                    article_id = article.get('id')
+                    description = clean_html(article.get("description", ""))
+                    title = article.get("title", "")
+                    link = article.get("link", "#")
+                    article_id = article.get("id")
                     is_bookmarked = article_id in bookmarked_ids
-                    published_date = article.get('published_date')
-                    
+                    published_date = article.get("published_date")
+
                     with st.container():
                         st.markdown(
                             (
@@ -531,7 +512,7 @@ def main():
                                 "display: flex; "
                                 "flex-direction: column;'>"
                             ),
-                            unsafe_allow_html=True
+                            unsafe_allow_html=True,
                         )
                         col1, col2 = st.columns([4, 1])
                         with col1:
@@ -543,9 +524,9 @@ def main():
                                     f"{title}"
                                     f"</span>"
                                 ),
-                                unsafe_allow_html=True
+                                unsafe_allow_html=True,
                             )
-                            
+
                             # Display date and time in human readable format
                             if published_date:
                                 formatted_date = format_datetime(published_date)
@@ -555,10 +536,10 @@ def main():
                                         f"📅 {formatted_date}"
                                         f"</span>"
                                     ),
-                                    unsafe_allow_html=True
+                                    unsafe_allow_html=True,
                                 )
-                                
-                            if article.get('category'):
+
+                            if article.get("category"):
                                 st.markdown(
                                     (
                                         f"<span style='color:"
@@ -568,10 +549,10 @@ def main():
                                         f"<b>{article.get('category')}</b>"
                                         f"</span>"
                                     ),
-                                    unsafe_allow_html=True
+                                    unsafe_allow_html=True,
                                 )
-                            if article.get('ai_summary'):
-                                st.info(article.get('ai_summary'), icon="🤖")
+                            if article.get("ai_summary"):
+                                st.info(article.get("ai_summary"), icon="🤖")
                             with st.expander("Show full article text"):
                                 st.markdown(description)
                         with col2:
@@ -580,52 +561,42 @@ def main():
                                 if is_bookmarked:
                                     if st.button(
                                         "✅ Remove from bookmarks",
-                                        key=f"unbookmark_{article_id}_{idx}"
+                                        key=f"unbookmark_{article_id}_{idx}",
                                     ):
-                                        with st.spinner(
-                                            "Removing from bookmarks..."
-                                        ):
+                                        with st.spinner("Removing from bookmarks..."):
                                             if remove_bookmark(
-                                                st.session_state.token,
-                                                article_id
+                                                st.session_state.token, article_id
                                             ):
                                                 tmp = st.session_state
                                                 tmp.bookmarks_dirty = True
                                                 st.success(
-                                                    "Article removed "
-                                                    "from bookmarks!"
+                                                    "Article removed " "from bookmarks!"
                                                 )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Error removing "
-                                                    "from bookmarks."
+                                                    "Error removing " "from bookmarks."
                                                 )
                                 else:
                                     if st.button(
                                         "🔖 Add to bookmarks",
-                                        key=f"bookmark_{article_id}_{idx}"
+                                        key=f"bookmark_{article_id}_{idx}",
                                     ):
-                                        with st.spinner(
-                                            "Adding to bookmarks..."
-                                        ):
+                                        with st.spinner("Adding to bookmarks..."):
                                             if add_bookmark(
-                                                st.session_state.token,
-                                                article_id
+                                                st.session_state.token, article_id
                                             ):
                                                 tst = st.session_state
                                                 tst.bookmarks_dirty = True
                                                 st.success(
-                                                    "Article added "
-                                                    "to bookmarks!"
+                                                    "Article added " "to bookmarks!"
                                                 )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Error adding "
-                                                    "to bookmarks."
+                                                    "Error adding " "to bookmarks."
                                                 )
                             st.markdown(
                                 (
@@ -638,7 +609,7 @@ def main():
                                     f"margin-top:8px;'>"
                                     "Read on Telegram</a>"
                                 ),
-                                unsafe_allow_html=True
+                                unsafe_allow_html=True,
                             )
                         st.markdown("</div>", unsafe_allow_html=True)
             else:
@@ -656,7 +627,7 @@ def main():
                     "or search query. "
                     "Try changing filters or updating articles."
                 ),
-                icon="ℹ️"
+                icon="ℹ️",
             )
 
     # Fix remaining UI elements for channel update
@@ -668,15 +639,14 @@ def main():
                 with st.spinner("Updating articles from channels..."):
                     update_response = requests.post(
                         f"{API_URL}/feed/update",
-                        headers={"Authorization": f"Bearer {st.session_state.token}"}
+                        headers={"Authorization": f"Bearer {st.session_state.token}"},
                     )
                     if update_response.status_code == 200:
                         st.success("Channels updated!")
                         st.session_state.news_loaded = False
                         st.experimental_rerun()
                     else:
-                        st.error(
-                            f"Error during update: {update_response.text}")
+                        st.error(f"Error during update: {update_response.text}")
 
 
 if __name__ == "__main__":

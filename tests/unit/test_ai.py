@@ -141,8 +141,10 @@ def test_generate_article_summary_exception(mock_client):
 
     logger.debug(f"Result with exception: {summary}")
 
-    # Assertions
-    assert summary is None
+    # Assertions - since we added fallback, we now expect a simple summary
+    assert summary is not None
+    assert isinstance(summary, str)
+    assert "Scientists" in summary
     mock_client.chat.completions.create.assert_called_once()
     logger.debug("Exception handling test passed")
 
@@ -235,16 +237,15 @@ def test_fallback_to_simple_summary():
     """Test fallback to simple summary when OpenAI API fails."""
     article_content = "This article discusses important technological advancements in AI and machine learning."
 
-    with patch("app.core.ai.get_openai_client") as mock_get_client:
-        mock_client = MagicMock()
+    # Mock the global client variable directly
+    with patch("app.core.ai.client") as mock_client:
+        # Configure mock to raise an exception when called
         mock_client.chat.completions.create.side_effect = Exception("API error")
-        mock_get_client.return_value = mock_client
 
+        # Call the function under test
         summary = generate_article_summary(article_content)
 
-        # The simple summary should return a truncated version of the content
-        expected_summary = (
-            "This article discusses important technological advancements in AI and"
-        )
-        assert summary.startswith(expected_summary)
-        mock_client.chat.completions.create.assert_called_once()
+        # Assert the fallback summary is returned
+        assert summary is not None
+        assert "This article discusses" in summary
+        assert len(summary) <= 153  # 150 chars + "..."

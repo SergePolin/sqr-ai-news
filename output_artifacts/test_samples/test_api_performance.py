@@ -23,23 +23,23 @@ AUTH_TOKENS = {}
 def on_test_start(environment, **kwargs):
     """Set up shared test resources before test starts."""
     print("Creating test user before performance test starts...")
-    
+
     # Use requests directly instead of environment.runner.locust.client
     host = environment.host
     if not host:
         print("Warning: No host specified, using default http://localhost:8000")
         host = "http://localhost:8000"
-        
+
     try:
         # Create test user
         user_data = {
             "username": "testuser",
             "email": "testuser@example.com",
-            "password": "testpassword"
+            "password": "testpassword",
         }
         response = requests.post(f"{host}/auth/register", json=user_data)
         print(f"User registration status: {response.status_code}")
-        
+
         # Get auth token and store in global cache
         credentials = {"username": "testuser", "password": "testpassword"}
         response = requests.post(f"{host}/auth/login", data=credentials)
@@ -57,7 +57,7 @@ class NewsApiUser(HttpUser):
 
     # Wait between 1 to 5 seconds between tasks
     wait_time = between(1, 5)
-    
+
     def on_start(self):
         """Setup before starting tests - load auth token."""
         # Use shared token if available, otherwise authenticate
@@ -73,11 +73,13 @@ class NewsApiUser(HttpUser):
         try:
             credentials = {"username": "testuser", "password": "testpassword"}
             response = self.client.post("/auth/login", data=credentials)
-            
+
             if response.status_code == 200:
                 self.token = response.json().get("access_token")
                 if self.token:
-                    self.client.headers.update({"Authorization": f"Bearer {self.token}"})
+                    self.client.headers.update(
+                        {"Authorization": f"Bearer {self.token}"}
+                    )
                     # Cache the token globally
                     AUTH_TOKENS["testuser"] = self.token
             else:
@@ -85,7 +87,7 @@ class NewsApiUser(HttpUser):
                 user_data = {
                     "username": "testuser",
                     "email": "testuser@example.com",
-                    "password": "testpassword"
+                    "password": "testpassword",
                 }
                 self.client.post("/auth/register", json=user_data)
                 # Try login again
@@ -93,7 +95,9 @@ class NewsApiUser(HttpUser):
                 if response.status_code == 200:
                     self.token = response.json().get("access_token")
                     if self.token:
-                        self.client.headers.update({"Authorization": f"Bearer {self.token}"})
+                        self.client.headers.update(
+                            {"Authorization": f"Bearer {self.token}"}
+                        )
                         # Cache the token globally
                         AUTH_TOKENS["testuser"] = self.token
         except Exception as e:
@@ -116,7 +120,9 @@ class NewsApiUser(HttpUser):
         # In a real test, you'd get the ID dynamically
         # This is simplified for the template
         article_id = 1
-        with self.client.get(f"/api/news/articles/{article_id}", catch_response=True) as response:
+        with self.client.get(
+            f"/api/news/articles/{article_id}", catch_response=True
+        ) as response:
             if response.status_code == 401:
                 # Re-authenticate on 401
                 self._authenticate()
@@ -130,7 +136,9 @@ class NewsApiUser(HttpUser):
         """Test filtered articles."""
         categories = ["politics", "technology", "sports", "entertainment"]
         for category in categories:
-            with self.client.get(f"/api/news/articles/?category={category}", catch_response=True) as response:
+            with self.client.get(
+                f"/api/news/articles/?category={category}", catch_response=True
+            ) as response:
                 if response.status_code == 401:
                     # Re-authenticate on 401
                     self._authenticate()
@@ -148,7 +156,7 @@ class SearchApiUser(HttpUser):
     """Simulated user searching for articles."""
 
     wait_time = between(5, 15)
-    
+
     def on_start(self):
         """Setup before starting tests - load auth token."""
         # Use shared token if available, otherwise authenticate
@@ -164,11 +172,13 @@ class SearchApiUser(HttpUser):
         try:
             credentials = {"username": "testuser", "password": "testpassword"}
             response = self.client.post("/auth/login", data=credentials)
-            
+
             if response.status_code == 200:
                 self.token = response.json().get("access_token")
                 if self.token:
-                    self.client.headers.update({"Authorization": f"Bearer {self.token}"})
+                    self.client.headers.update(
+                        {"Authorization": f"Bearer {self.token}"}
+                    )
                     # Cache the token globally
                     AUTH_TOKENS["testuser"] = self.token
         except Exception as e:
@@ -179,7 +189,9 @@ class SearchApiUser(HttpUser):
         """Test search functionality."""
         search_terms = ["python", "news", "technology", "world"]
         for term in search_terms:
-            with self.client.get(f"/api/news/articles/?search={term}", catch_response=True) as response:
+            with self.client.get(
+                f"/api/news/articles/?search={term}", catch_response=True
+            ) as response:
                 if response.status_code == 401:
                     # Re-authenticate on 401
                     self._authenticate()

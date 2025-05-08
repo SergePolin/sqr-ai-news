@@ -34,7 +34,7 @@ def test_get_article(test_db, clean_articles_table):
     test_db.add(article)
     test_db.commit()
     test_db.refresh(article)
-    
+
     # Run the test
     retrieved_article = crud.get_article(test_db, article_id=article.id)
     assert retrieved_article is not None
@@ -61,9 +61,11 @@ def test_get_article_by_url(test_db, clean_articles_table):
     )
     test_db.add(article)
     test_db.commit()
-    
+
     # Run the test
-    retrieved_article = crud.get_article_by_url(test_db, url="http://example.com/article1-get-by-url")
+    retrieved_article = crud.get_article_by_url(
+        test_db, url="http://example.com/article1-get-by-url"
+    )
     assert retrieved_article is not None
     assert retrieved_article.title == "Test Article 1"
 
@@ -94,7 +96,7 @@ def test_get_articles(test_db, clean_articles_table):
     for article in articles_data:
         test_db.add(article)
     test_db.commit()
-    
+
     # Run the actual test
     articles = crud.get_articles(test_db)
     assert len(articles) == 2
@@ -128,7 +130,7 @@ def test_get_articles_with_source_filter(test_db, clean_articles_table):
     for article in articles_data:
         test_db.add(article)
     test_db.commit()
-    
+
     # Run the actual test
     articles = crud.get_articles(test_db, source="Test Source")
     assert len(articles) == 2
@@ -163,7 +165,7 @@ def test_get_articles_with_category_filter(test_db, clean_articles_table):
     for article in articles_data:
         test_db.add(article)
     test_db.commit()
-    
+
     # Run the actual test
     articles = crud.get_articles(test_db, category="politics")
     assert len(articles) == 1
