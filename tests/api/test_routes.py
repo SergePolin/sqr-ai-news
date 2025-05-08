@@ -3,6 +3,7 @@ API tests for routes.
 """
 
 import pytest
+
 from app.db.models import NewsArticle
 
 
