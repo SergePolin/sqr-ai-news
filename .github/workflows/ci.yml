@@ -134,16 +134,6 @@ jobs:
       run: |
         poetry install
         poetry run pip install mutmut
-    
-    - name: Generate mutation report
-      run: |
-        poetry run mutmut junitxml > mutation-report.xml
-    
-    - name: Upload mutation report
-      uses: actions/upload-artifact@v4
-      with:
-        name: mutation-report
-        path: mutation-report.xml
 
   performance:
     runs-on: ubuntu-latest
