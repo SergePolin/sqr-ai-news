@@ -12,6 +12,7 @@ A high-performance news aggregation service with AI-powered features. This appli
 ## 📋 Table of Contents
 
 - [Features](#-features)
+- [Core Functionality: Telegram News Processing Pipeline](#-core-functionality-telegram-news-processing-pipeline)
 - [Architecture](#-architecture)
 - [Quality Metrics](#-quality-metrics)
 - [Installation](#-installation)
@@ -32,6 +33,57 @@ A high-performance news aggregation service with AI-powered features. This appli
 - **Category Filtering**: Browse news by categories (technology, politics, sports, etc.)
 - **Bookmarking**: Save articles for later reading
 - **Responsive UI**: Access the application from any device
+
+## 🔄 Core Functionality: Telegram News Processing Pipeline
+
+The application implements a sophisticated pipeline for collecting, processing, and delivering news content from Telegram channels:
+
+### 1. Data Collection
+
+```mermaid
+graph LR
+    A[User adds Telegram channel] --> B[System stores channel reference]
+    B --> C[Background task fetches channel content]
+    C --> D[RSS proxy transforms Telegram to RSS]
+    D --> E[Feed parser extracts articles]
+    E --> F[Content stored in database]
+```
+
+- **Channel Subscription**: Users can add any public Telegram channel using its handle (e.g. `@channelname`)
+- **Content Extraction**: The system uses RSSHub as a proxy to transform Telegram content into RSS feeds
+- **Parsing**: Content is extracted using `feedparser` and `BeautifulSoup` for HTML processing
+- **Automatic Updates**: Channels can be refreshed on-demand using the update endpoint
+
+### 2. AI Processing
+
+Each article undergoes AI enhancement through Azure OpenAI:
+
+- **Summarization**: Articles are automatically summarized using AI for quick comprehension
+- **Categorization**: Content is categorized into one of 14 predefined categories like Technology, Politics, Sports, etc.
+- **Smart Classification**: AI analyzes article content to determine the most appropriate category
+
+### 3. Content Delivery
+
+```mermaid
+graph LR
+    A[Database] --> B[API Endpoints]
+    B --> C[Filtering by Category]
+    B --> D[Full-text Search]
+    B --> E[User Bookmarks]
+    C & D & E --> F[Frontend Display]
+```
+
+- **Personalized Feeds**: Users see content from their subscribed channels
+- **Smart Filtering**: Articles can be filtered by AI-determined categories
+- **Bookmarking**: Users can save articles for later reading
+- **Search**: Users can search across all their channel content
+
+### 4. Reliability Features
+
+- **Error Resilience**: Implements retry logic with exponential backoff for external services
+- **Rate Limit Handling**: Properly handles API rate limits to ensure reliable operation
+- **Deduplication**: Prevents duplicate content while allowing updates to existing articles
+- **Background Processing**: Heavy tasks run asynchronously to maintain UI responsiveness
 
 ## 🏗️ Architecture
 
