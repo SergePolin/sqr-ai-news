@@ -1,8 +1,10 @@
 """
 Unit tests for Pydantic schema validation.
 """
-import pytest
+
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
 from app.schemas.news import NewsArticle, NewsArticleBase
@@ -17,7 +19,7 @@ def test_news_article_base_valid():
         "source": "Test Source",
         "published_date": datetime.now().isoformat(),
     }
-    
+
     article = NewsArticleBase(**data)
     assert article.title == data["title"]
     assert article.content == data["content"]
@@ -34,10 +36,10 @@ def test_news_article_base_missing_required():
         "url": "http://example.com/test",
         "source": "Test Source",
     }
-    
+
     with pytest.raises(ValidationError) as exc_info:
         NewsArticleBase(**data)
-    
+
     errors = exc_info.value.errors()
     assert any(error["loc"][0] == "title" for error in errors)
 
@@ -49,8 +51,9 @@ def test_news_article_base_invalid_url():
         "content": "This is test content",
         "url": "invalid-url",  # Invalid URL format
         "source": "Test Source",
+        "published_date": datetime.now().isoformat(),
     }
-    
+
     # This should not raise an error since we're not using HttpUrl type
     # In a real application you may want to validate URL format
     article = NewsArticleBase(**data)
@@ -70,8 +73,9 @@ def test_news_article_model():
         "sentiment_score": 0.75,
         "category": "technology",
         "keywords": "test,article,technology",
+        "published_date": datetime.now().isoformat(),
     }
-    
+
     article = NewsArticle(**data)
     assert article.id == 1
     assert article.title == "Test Article"
@@ -89,10 +93,11 @@ def test_news_article_optional_fields():
         "source": "Test Source",
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat(),
+        "published_date": datetime.now().isoformat(),
     }
-    
+
     article = NewsArticle(**data)
     assert article.id == 1
     assert article.sentiment_score is None
     assert article.category is None
-    assert article.keywords is None 
+    assert article.keywords is None

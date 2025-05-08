@@ -1,16 +1,19 @@
 """
 Common test fixtures for all tests.
 """
+
 import os
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.main import app
 from app.db.database import Base, get_db
 from app.db.models import NewsArticle
+from app.main import app
 
 
 # Create in-memory test database
@@ -43,13 +46,13 @@ def test_db(test_engine):
 @pytest.fixture(scope="function")
 def client(test_db):
     """Create a test client with the test database."""
-    
+
     def _get_test_db():
         try:
             yield test_db
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = _get_test_db
     with TestClient(app) as client:
         yield client
@@ -66,6 +69,7 @@ def sample_articles(test_db):
             url="http://example.com/article1",
             source="Test Source",
             category="politics",
+            published_date=datetime.now(),
         ),
         NewsArticle(
             title="Test Article 2",
@@ -73,19 +77,40 @@ def sample_articles(test_db):
             url="http://example.com/article2",
             source="Test Source",
             category="technology",
+            published_date=datetime.now(),
         ),
     ]
-    
+
     for article in articles:
         test_db.add(article)
     test_db.commit()
-    
+
     for article in articles:
         test_db.refresh(article)
-    
+
     yield articles
-    
+
     # Clean up
     for article in articles:
         test_db.delete(article)
-    test_db.commit() 
+    test_db.commit()
+
+
+@pytest.fixture(scope="function")
+def auth_token(client):
+    """Register and log in a test user, return the JWT token."""
+    username = "testuser"
+    email = "testuser@example.com"
+    password = "testpassword"
+    # Register user (ignore if already exists)
+    client.post(
+        "/auth/register",
+        json={"username": username, "email": email, "password": password},
+    )
+    # Login user
+    response = client.post(
+        "/auth/login", data={"username": username, "password": password}
+    )
+    assert response.status_code == 200, f"Login failed: {response.text}"
+    token = response.json()["access_token"]
+    return token

@@ -2,16 +2,69 @@ services:
   web:
     build: .
     ports:
-      - "${PORT:-3671}:8000"
+      - "8000:8000"
+    expose:
+      - 8000
     volumes:
       - .:/app
+      - db_data:/app/news.db
     environment:
       - DATABASE_URL=sqlite:///./news.db
       - LOG_LEVEL=INFO
+      - SECRET_KEY=${SECRET_KEY}
+      - HOST=0.0.0.0 # Use 0.0.0.0 in container but restrict publicly in production
+      # Azure OpenAI settings
+      - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2023-12-01-preview}
+      - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT:-gpt-4}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+    networks:
+      - news_network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - 8501:8501
+    volumes:
+      - ./frontend:/app
+    environment:
+      - API_URL=http://web:8000
+      - STREAMLIT_SERVER_ENABLE_CORS=true
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+      - STREAMLIT_SERVER_BASE_URL_PATH=
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    depends_on:
+      - web
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8501" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - news_network
+    labels:
+      # Essential WebSocket support for HTTP Traefik - will be merged with PaaS labels
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Proto=http"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.X-Forwarded-Host=${TRAEFIK_HOST:-localhost}"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.streamlit-ws.headers.customrequestheaders.Upgrade=websocket"
+      # Apply middleware to the HTTP router (not HTTPS)
+      - "traefik.http.routers.sqr-project-dev-frcqok-100-web.middlewares=streamlit-ws@docker"
+
+networks:
+  news_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

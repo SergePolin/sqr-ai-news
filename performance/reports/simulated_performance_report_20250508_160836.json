@@ -1,0 +1,66 @@
+{
+  "total_requests": 1000,
+  "avg_response_time": 50.26654723240384,
+  "median_response_time": 42.8525187666042,
+  "p95_response_time": 106.29615779059894,
+  "p99_response_time": 150.35380261798937,
+  "max_response_time": 479.09569009786884,
+  "min_response_time": 7.957487129084434,
+  "endpoints": {
+    "/api/news/articles/?search=technology": {
+      "requests": 179,
+      "avg_response_time": 98.72220372555336,
+      "median_response_time": 91.13419929219835,
+      "p95_response_time": 127.61247678988764,
+      "max_response_time": 479.09569009786884,
+      "min_response_time": 49.72532847415275,
+      "within_threshold": 97.20670391061452
+    },
+    "/auth/login": {
+      "requests": 172,
+      "avg_response_time": 41.85816582093072,
+      "median_response_time": 40.22491040763113,
+      "p95_response_time": 53.23489841240483,
+      "max_response_time": 156.49323196393286,
+      "min_response_time": 16.649403793036257,
+      "within_threshold": 100.0
+    },
+    "/api/news/articles/": {
+      "requests": 157,
+      "avg_response_time": 48.477849756894386,
+      "median_response_time": 46.29823831823266,
+      "p95_response_time": 64.16854077990256,
+      "max_response_time": 211.5343134837952,
+      "min_response_time": 25.089881460753656,
+      "within_threshold": 99.36305732484077
+    },
+    "/api/news/articles/1": {
+      "requests": 168,
+      "avg_response_time": 30.30177922470714,
+      "median_response_time": 29.788599233215287,
+      "p95_response_time": 37.96330807635933,
+      "max_response_time": 131.58649254328662,
+      "min_response_time": 15.743407799716582,
+      "within_threshold": 100.0
+    },
+    "/health": {
+      "requests": 159,
+      "avg_response_time": 15.542261746935912,
+      "median_response_time": 15.112239644183704,
+      "p95_response_time": 20.938595094907125,
+      "max_response_time": 43.75033550487701,
+      "min_response_time": 7.957487129084434,
+      "within_threshold": 100.0
+    },
+    "/api/news/articles/?category=technology": {
+      "requests": 165,
+      "avg_response_time": 61.955923060507125,
+      "median_response_time": 62.616263187329345,
+      "p95_response_time": 78.73580247334996,
+      "max_response_time": 251.43640232420577,
+      "min_response_time": 15.448878023921331,
+      "within_threshold": 99.39393939393939
+    }
+  },
+  "within_threshold": 99.3
+}

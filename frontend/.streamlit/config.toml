@@ -1,0 +1,12 @@
+[server]
+enableCORS = false  # Allow local API calls from browser
+enableXsrfProtection = false
+headless = false  # Show browser window for local dev
+enableWebsocketCompression = false
+maxUploadSize = 50
+maxMessageSize = 200
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501  # Default Streamlit port 
