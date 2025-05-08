@@ -450,6 +450,7 @@ Made with ❤️ by Bantiki 🎀 team
 - **Authentication**: Required
 - **Response**: List of bookmarked articles with full details
 
+
 ### News API Endpoints
 
 #### Get Articles

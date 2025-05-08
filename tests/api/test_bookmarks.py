@@ -88,17 +88,23 @@ def test_add_bookmark(test_db: Session, clean_db):
     # Create test article
     logger.debug("Starting test_add_bookmark")
     article = create_test_article(test_db)
+    print(f"Debug - Created test article ID: {article.id}")
 
     # Get auth token
     username, token = get_auth_token()
+    print(f"Debug - Got token for user {username}, token prefix: {token[:10]}...")
 
     # Add bookmark
     logger.debug(f"Adding bookmark for article ID: {article.id}")
-    response = client.post(
-        f"/feed/bookmarks/{article.id}", headers={"Authorization": f"Bearer {token}"}
-    )
+    auth_header = {"Authorization": f"Bearer {token}"}
+    print(f"Debug - Auth header: {auth_header}")
+    endpoint = f"/feed/bookmarks/{article.id}"
+    print(f"Debug - Endpoint: {endpoint}")
+    response = client.post(endpoint, headers=auth_header)
     logger.debug(f"Add bookmark response status: {response.status_code}")
     logger.debug(f"Add bookmark response body: {response.text}")
+    print(f"Debug - Response status: {response.status_code}")
+    print(f"Debug - Response body: {response.text}")
 
     assert response.status_code == 201
     data = response.json()

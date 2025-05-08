@@ -3,11 +3,10 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request                           
-from fastapi.exceptions import RequestValidationError 
-from fastapi.responses import JSONResponse    
+from fastapi.responses import JSONResponse
 
 # Load environment variables from .env file
 if os.path.exists(".env"):
@@ -32,6 +31,7 @@ app = FastAPI(
     description="API for an AI-powered news aggregation service",
     version="0.1.0",
 )
+
 
 # Exception Handler
 @app.exception_handler(RequestValidationError)

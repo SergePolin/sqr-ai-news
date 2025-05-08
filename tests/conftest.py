@@ -4,6 +4,7 @@ Common test fixtures for all tests.
 
 import os
 from datetime import datetime
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -41,6 +42,13 @@ def test_db(test_engine):
     finally:
         test_db.rollback()
         test_db.close()
+
+
+@pytest.fixture(scope="function")
+def mock_db_session():
+    """Create a mock database session for tests that need to mock the DB."""
+    mock_session = MagicMock()
+    return mock_session
 
 
 @pytest.fixture(scope="function")

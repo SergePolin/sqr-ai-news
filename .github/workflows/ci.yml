@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -61,7 +61,7 @@ jobs:
         poetry run bandit -r app -f json -o bandit-report.json -ll
     
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-report
         path: bandit-report.json
@@ -71,7 +71,7 @@ jobs:
     needs: [lint, security]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -87,6 +87,17 @@ jobs:
       run: |
         poetry install
     
+    - name: Start backend API (background)
+      run: |
+        poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        sleep 5  # Wait for app to start
+    
+    - name: Start Streamlit frontend (background)
+      run: |
+        cd frontend
+        poetry run streamlit run streamlit_app.py --server.port=8501 --server.headless=true &
+        sleep 10  # Wait for Streamlit to start
+    
     - name: Run unit tests
       run: |
         poetry run pytest tests/unit --cov=app --cov-report=xml
@@ -94,10 +105,6 @@ jobs:
     - name: Run integration tests
       run: |
         poetry run pytest tests/integration --cov=app --cov-append --cov-report=xml
-    
-    - name: Run API tests
-      run: |
-        poetry run pytest tests/api --cov=app --cov-append --cov-report=xml
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -110,7 +117,7 @@ jobs:
         poetry run pytest --cov=app --cov-report=html
     
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: htmlcov/
@@ -121,7 +128,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -147,7 +154,7 @@ jobs:
         poetry run mutmut junitxml > mutation-report.xml
     
     - name: Upload mutation report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mutation-report
         path: mutation-report.xml
@@ -158,7 +165,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -186,7 +193,7 @@ jobs:
         poetry run locust -f tests/performance/test_api_performance.py --headless -u 10 -r 2 --run-time 30s --host http://localhost:8000 --html performance-reports/report.html
     
     - name: Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-report
         path: performance-reports/ 

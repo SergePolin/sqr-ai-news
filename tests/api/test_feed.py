@@ -339,6 +339,7 @@ def test_list_user_bookmarks(
 ):
     """Test listing user bookmarks."""
     token = test_user["token"]
+    print(f"Debug - Token: {token[:10]}...")  # Print first 10 chars of token
 
     # Create test article
     article_data = {
@@ -349,19 +350,25 @@ def test_list_user_bookmarks(
         "published_date": datetime(2025, 1, 1, 12, 0, 0),
     }
     article = create_or_update_article(test_db, article_data)
+    print(f"Debug - Created article with ID: {article.id}")
 
     # Mock bookmarks
     mock_bookmark = MagicMock()
     mock_bookmark.article_id = article.id
     mock_get_user_bookmarks.return_value = [mock_bookmark]
+    print(f"Debug - Mocked bookmark for article ID: {mock_bookmark.article_id}")
 
     # Mock get_article
     mock_get_article.return_value = article
+    print(f"Debug - Mocked get_article to return: {article.title}")
 
     # Get bookmarks
-    response = client.get(
-        "/feed/bookmarks", headers={"Authorization": f"Bearer {token}"}
-    )
+    auth_header = {"Authorization": f"Bearer {token}"}
+    print(f"Debug - Auth header: {auth_header}")
+    response = client.get("/feed/bookmarks", headers=auth_header)
+
+    print(f"Debug - Response status: {response.status_code}")
+    print(f"Debug - Response body: {response.text}")
 
     assert response.status_code == 200
     data = response.json()
@@ -372,7 +379,7 @@ def test_list_user_bookmarks(
 def test_get_news_channel_not_found(client, mock_db_session):
     """Test getting news when the channel doesn't exist."""
     # Mock the get_channel function to return None
-    with patch("app.api.feed.crud.get_channel", return_value=None):
+    with patch("app.db.crud.get_channel", return_value=None):
         # Call the API
         response = client.get("/api/feed/news/invalid-channel")
         # Check response
@@ -387,18 +394,28 @@ class MockChannel:
         self.channel_alias = "@test_channel"
 
 
-def test_process_new_articles(client, mock_db_session):
+def test_process_new_articles(client, mock_db_session, test_user, clean_user_channels):
     """Test processing new articles."""
-    # Mock get_channel
-    with patch("app.api.feed.crud.get_channel", return_value=MockChannel()):
-        # Mock get_user_channel to return True
-        with patch("app.api.feed.crud.get_user_channel", return_value=True):
-            # Mock process_articles
-            with patch(
-                "app.api.feed.ai_processor.process_articles", return_value=None
-            ) as mock_process:
-                # Call the API
-                response = client.post("/api/feed/process/123")
-                # Check response and verify mock was called
-                assert response.status_code == 200
-                mock_process.assert_called_once()  # Use mock to avoid unused variable
+    token = test_user["token"]
+
+    # First create a channel - this is necessary for the update to work
+    channel_data = {"Channel_alias": "@test_channel"}
+
+    # Mock the process_channel_articles function to avoid actual API calls
+    with patch("app.api.feed.process_channel_articles"):
+        # Create a channel first
+        client.post(
+            "/feed/", json=channel_data, headers={"Authorization": f"Bearer {token}"}
+        )
+
+    # Now test the update endpoint with proper mocking
+    with patch("app.api.feed.process_channel_articles") as mock_process:
+        response = client.post(
+            "/feed/update", headers={"Authorization": f"Bearer {token}"}
+        )
+
+        # Check response and verify mock was called
+        assert response.status_code == 200
+        assert "message" in response.json()
+        assert "Update started" in response.json()["message"]
+        assert mock_process.call_count >= 1

@@ -30,24 +30,45 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
 client = None
 client_type = None  # 'azure' or 'openai'
 
-# Only use Azure OpenAI
-if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
-    try:
-        client = AzureOpenAI(
-            api_key=AZURE_OPENAI_KEY,
-            api_version=AZURE_OPENAI_API_VERSION,
-            azure_endpoint=AZURE_OPENAI_ENDPOINT,
+
+def get_openai_client():
+    """
+    Get the OpenAI client (Azure or regular OpenAI).
+
+    Returns:
+        OpenAI client instance or None if not configured
+    """
+    global client, client_type
+
+    # If client is already initialized, return it
+    if client:
+        return client
+
+    # Try to initialize Azure OpenAI client
+    if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
+        try:
+            client = AzureOpenAI(
+                api_key=AZURE_OPENAI_KEY,
+                api_version=AZURE_OPENAI_API_VERSION,
+                azure_endpoint=AZURE_OPENAI_ENDPOINT,
+            )
+            client_type = "azure"
+            logger.info("Azure OpenAI client initialized successfully")
+            return client
+        except Exception as e:
+            logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
+    else:
+        logger.warning(
+            "Azure OpenAI credentials missing. Set AZURE_OPENAI_KEY and "
+            "AZURE_OPENAI_ENDPOINT."
         )
-        client_type = "azure"
-        logger.info("Azure OpenAI client initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
-        client = None
-else:
-    logger.warning(
-        "Azure OpenAI credentials missing. Set AZURE_OPENAI_KEY and "
-        "AZURE_OPENAI_ENDPOINT."
-    )
+
+    # No client could be initialized
+    return None
+
+
+# Initialize the client
+client = get_openai_client()
 
 if client is None:
     logger.warning("No OpenAI credentials provided. AI summarization will be disabled.")
@@ -125,6 +146,15 @@ def generate_article_summary(content: str, max_length: int = 200) -> Optional[st
         return summary
     except Exception as e:
         logger.error(f"Error generating article summary: {str(e)}")
+        # Fallback to simple summary - truncate content with ellipsis
+        if content and len(content) > 3:
+            # Get the first 150 characters of the content for a simple summary
+            simple_summary = content[:150].strip()
+            # Add ellipsis if truncated
+            if len(content) > 150:
+                simple_summary += "..."
+            logger.info("Using simple summary as fallback")
+            return simple_summary
         return None
 
 
