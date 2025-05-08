@@ -98,12 +98,9 @@ def test_add_bookmark(test_db: Session, clean_db):
     logger.debug(f"Adding bookmark for article ID: {article.id}")
     auth_header = {"Authorization": f"Bearer {token}"}
     print(f"Debug - Auth header: {auth_header}")
-    
     endpoint = f"/feed/bookmarks/{article.id}"
     print(f"Debug - Endpoint: {endpoint}")
-    
     response = client.post(endpoint, headers=auth_header)
-    
     logger.debug(f"Add bookmark response status: {response.status_code}")
     logger.debug(f"Add bookmark response body: {response.text}")
     print(f"Debug - Response status: {response.status_code}")
