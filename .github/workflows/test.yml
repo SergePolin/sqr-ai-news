@@ -27,6 +27,18 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Run failing tests individually with verbose output
+        run: |
+          echo "Running individual bookmark tests to debug failures..."
+          poetry run pytest tests/api/test_bookmarks.py::test_add_bookmark -v
+          poetry run pytest tests/api/test_bookmarks.py::test_add_bookmark_duplicate -v
+          poetry run pytest tests/api/test_bookmarks.py::test_delete_bookmark -v
+          poetry run pytest tests/api/test_bookmarks.py::test_delete_nonexistent_bookmark -v
+          poetry run pytest tests/api/test_bookmarks.py::test_list_bookmarks -v
+          poetry run pytest tests/api/test_feed.py::test_add_article_bookmark -v
+          poetry run pytest tests/api/test_feed.py::test_delete_article_bookmark -v
+          poetry run pytest tests/api/test_feed.py::test_list_user_bookmarks -v
+
       - name: Run tests with coverage
         run: poetry run pytest -k "not ui" --cov=app --cov-report=xml --cov-report=term
 

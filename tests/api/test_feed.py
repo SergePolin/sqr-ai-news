@@ -339,6 +339,7 @@ def test_list_user_bookmarks(
 ):
     """Test listing user bookmarks."""
     token = test_user["token"]
+    print(f"Debug - Token: {token[:10]}...")  # Print first 10 chars of token
 
     # Create test article
     article_data = {
@@ -349,19 +350,25 @@ def test_list_user_bookmarks(
         "published_date": datetime(2025, 1, 1, 12, 0, 0),
     }
     article = create_or_update_article(test_db, article_data)
+    print(f"Debug - Created article with ID: {article.id}")
 
     # Mock bookmarks
     mock_bookmark = MagicMock()
     mock_bookmark.article_id = article.id
     mock_get_user_bookmarks.return_value = [mock_bookmark]
+    print(f"Debug - Mocked bookmark for article ID: {mock_bookmark.article_id}")
 
     # Mock get_article
     mock_get_article.return_value = article
+    print(f"Debug - Mocked get_article to return: {article.title}")
 
     # Get bookmarks
-    response = client.get(
-        "/feed/bookmarks", headers={"Authorization": f"Bearer {token}"}
-    )
+    auth_header = {"Authorization": f"Bearer {token}"}
+    print(f"Debug - Auth header: {auth_header}")
+    response = client.get("/feed/bookmarks", headers=auth_header)
+
+    print(f"Debug - Response status: {response.status_code}")
+    print(f"Debug - Response body: {response.text}")
 
     assert response.status_code == 200
     data = response.json()
