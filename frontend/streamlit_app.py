@@ -282,15 +282,20 @@ def main():
 
                                         # ↙ API returned a validation / business error
                                         else:
-                                                try:
-                                                        err_msg = response.json().get(
-                                                            "message", response.text
-                                                        )
-                                                except ValueError:
-                                                        err_msg = response.text
-                                                st.error(f"Registration error: {err_msg}")
-                        else:
-                                st.error("Please fill in all fields.")
+                                            try:
+                                                data = response.json()
+                                                msg = data.get("message", response.text)
+
+                                                # our API returns a dict {field: message}
+                                                if isinstance(msg, dict):
+                                                    for m in msg.values():         # show each message separately
+                                                        st.error(m)
+                                                else:
+                                                    st.error(f"Registration error: {msg}")
+
+                                            except ValueError:
+                                                st.error(f"Registration error: {response.text}")
+
 
 
     else:
