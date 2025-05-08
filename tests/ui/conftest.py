@@ -15,4 +15,4 @@ def base_url():
 @pytest.fixture
 def wait(driver):
     """Return a WebDriverWait instance for the driver."""
-    return WebDriverWait(driver, 10) 
+    return WebDriverWait(driver, 10)
