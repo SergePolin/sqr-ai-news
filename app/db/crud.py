@@ -102,8 +102,10 @@ def get_user_channels(db: Session, user_id: str):
     """
     return db.query(UserChannels).filter(UserChannels.user_id == user_id).all()
 
+
 def get_channel(db: Session, channel_id: str):
     return db.query(UserChannels).filter(UserChannels.id == channel_id).first()
+
 
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
     db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
