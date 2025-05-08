@@ -300,6 +300,26 @@ ai-news-aggregator/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Code Quality
+
+### Linting
+
+This project uses Ruff for linting, which is faster and more comprehensive than Flake8.
+
+To run the linter:
+
+```bash
+make lint
+```
+
+To automatically fix linting issues:
+
+```bash
+make fix-lint
+```
+
+The CI pipeline will automatically check for linting issues on every pull request.
+
 Made with ❤️ by Bantiki 🎀 team
 
 ---

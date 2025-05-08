@@ -4,6 +4,7 @@ API tests for routes.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.db.models import NewsArticle
 
 
@@ -33,7 +34,9 @@ def test_health_check_endpoint(client):
     assert response.json()["status"] == "ok"
 
 
-def test_get_articles_endpoint(client, clean_articles_table, sample_articles, auth_token):
+def test_get_articles_endpoint(
+    client, clean_articles_table, sample_articles, auth_token
+):
     """Test getting all articles."""
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/api/news/articles/", headers=headers)
@@ -44,7 +47,9 @@ def test_get_articles_endpoint(client, clean_articles_table, sample_articles, au
     assert data[1]["title"] in ["Test Article 1", "Test Article 2"]
 
 
-def test_get_articles_with_filter(client, clean_articles_table, sample_articles, auth_token):
+def test_get_articles_with_filter(
+    client, clean_articles_table, sample_articles, auth_token
+):
     """Test getting articles with filter."""
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/api/news/articles/?category=politics", headers=headers)
