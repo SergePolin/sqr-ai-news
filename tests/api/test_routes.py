@@ -3,8 +3,6 @@ API tests for routes.
 """
 
 import pytest
-
-# from fastapi.testclient import TestClient  # Unused import
 from app.db.models import NewsArticle
 
 

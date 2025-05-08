@@ -1,6 +1,6 @@
+from datetime import datetime
 import logging
 import uuid
-from datetime import datetime
 
 import pytest
 from sqlalchemy import inspect, text
@@ -20,7 +20,7 @@ from app.db.crud import (
     remove_bookmark,
     update_channel,
 )
-from app.db.models import Bookmark, NewsArticle, User, UserChannels
+from app.db.models import User
 
 # Set up detailed logging
 logging.basicConfig(level=logging.DEBUG)
@@ -107,7 +107,8 @@ def test_update_existing_article(test_db: Session, sample_article_data):
     updated_data["title"] = "Updated Title"
     updated_data["ai_summary"] = "Updated AI summary"
 
-    updated_article = create_or_update_article(test_db, updated_data)
+    # Store the result but we don't need to use it
+    _ = create_or_update_article(test_db, updated_data)
 
     # Get the article from the database
     retrieved_article = get_article_by_url(test_db, sample_article_data["url"])

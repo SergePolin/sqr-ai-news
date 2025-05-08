@@ -10,16 +10,15 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
-# from selenium.webdriver.common.keys import Keys  # Unused import
-
-# from urllib.parse import urlparse
 
 
 # Configure Chrome options for headless operation
 @pytest.fixture(scope="module")
 def chrome_options():
+    """
+    Configure Chrome options for headless testing.
+    Returns Chrome options object with appropriate settings.
+    """
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
@@ -106,7 +105,9 @@ def selenium_register(driver, username, email, password):
             ),
             (
                 By.XPATH,
-                "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Username')]/following-sibling::div//input",
+                "//div[@role='tabpanel' and not(@hidden)]"
+                "//label[contains(., 'Username')]"
+                "/following-sibling::div//input",
             ),
             (
                 By.XPATH,

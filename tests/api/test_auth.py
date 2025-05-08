@@ -1,4 +1,3 @@
-# import json  # Unused import
 import logging
 from uuid import uuid4
 
@@ -7,10 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-# from app.core.security import verify_password  # Unused import
 from app.db.crud import get_user_by_username
-
-# from app.db.models import User  # Unused import
 from app.main import app
 
 # Set up detailed logging

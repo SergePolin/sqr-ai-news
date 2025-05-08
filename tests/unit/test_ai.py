@@ -70,7 +70,11 @@ def test_generate_article_summary_success(mock_client):
     mock_response = MagicMock()
     mock_choice = MagicMock()
     mock_message = MagicMock()
-    mock_message.content = "Scientists discovered a new deep-sea fish that can survive extreme pressure in the Mariana Trench."
+    # Break the long string into multiple lines
+    mock_message.content = (
+        "Scientists discovered a new deep-sea fish that can survive "
+        "extreme pressure in the Mariana Trench."
+    )
     mock_choice.message = mock_message
     mock_response.choices = [mock_choice]
     mock_client.chat.completions.create.return_value = mock_response

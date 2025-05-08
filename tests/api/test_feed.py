@@ -53,7 +53,7 @@ def test_user(test_db):
     password = "password123"
 
     # Create user via API
-    response = client.post(
+    _ = client.post(
         "/auth/register",
         json={"username": username, "email": email, "password": password},
     )
@@ -76,7 +76,7 @@ def test_create_channel(test_user, clean_user_channels):
 
     channel_data = {"Channel_alias": "@test_channel"}
 
-    with patch("app.api.feed.process_channel_articles") as mock_process:
+    with patch("app.api.feed.process_channel_articles"):
         response = client.post(
             "/feed/", json=channel_data, headers={"Authorization": f"Bearer {token}"}
         )
@@ -377,6 +377,14 @@ def test_get_news_channel_not_found(client, mock_db_session):
         response = client.get("/api/feed/news/invalid-channel")
         # Check response
         assert response.status_code == 404  # Adding assertion for unused variable
+
+
+class MockChannel:
+    """Mock channel for testing."""
+
+    def __init__(self):
+        self.id = 123
+        self.channel_alias = "@test_channel"
 
 
 def test_process_new_articles(client, mock_db_session):
