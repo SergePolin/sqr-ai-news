@@ -8,17 +8,23 @@ import time
 
 # Get API URL from environment or use default
 API_URL = os.environ.get("API_URL", "http://localhost:8000")
-
+REQUEST_TIMEOUT = 5  # seconds; protects UI from hanging if backend is slow/offline
 # Authentication functions
 
 
 def register_user(username, email, password):
-    """Register a new user."""
-    response = requests.post(
-        f"{API_URL}/auth/register",
-        json={"username": username, "email": email, "password": password}
-    )
-    return response
+    """Register a new user and return `requests.Response` or None if backend is unreachable."""
+    payload = {"username": username, "email": email, "password": password}
+    try:
+        response = requests.post(
+            f"{API_URL}/auth/register",
+            json=payload,
+            timeout=REQUEST_TIMEOUT
+        )
+        return response                
+    except requests.exceptions.ConnectionError:
+        return None                      
+
 
 
 def login_user(username, password):
@@ -249,22 +255,43 @@ def main():
                         st.error("Please fill in all fields.")
             
             with tab2:
+        # --- input fields ---
                 reg_username = st.text_input("Username", key="reg_username")
-                reg_email = st.text_input("Email", key="reg_email")
-                reg_password = st.text_input(
-                    "Password", type="password", key="reg_password")
+                reg_email    = st.text_input("Email",    key="reg_email")
+                reg_password = st.text_input("Password", type="password",
+                                            key="reg_password")
 
+        # --- action button ---
                 if st.button("Register", key="register_button"):
-                    if reg_username and reg_email and reg_password:
-                        with st.spinner("Registering..."):
-                            response = register_user(
-                                reg_username, reg_email, reg_password)
-                            if response.status_code == 201:
-                                st.success("Registration successful! Please log in.")
-                            else:
-                                st.error(f"Registration error: {response.text}")
-                    else:
-                        st.error("Please fill in all fields.")
+                        if reg_username and reg_email and reg_password:
+                                with st.spinner("Registering..."):
+                                        response = register_user(
+                                                reg_username, reg_email, reg_password
+                                        )
+
+                                        # ↙ back‑end offline
+                                        if response is None:
+                                                st.error(
+                                                    "Cannot connect to the authentication service. "
+                                                    "Make sure the backend is running."
+                                                )
+
+                                        # ↙ success
+                                        elif response.status_code == 201:
+                                                st.success("Registration successful! Please log in.")
+
+                                        # ↙ API returned a validation / business error
+                                        else:
+                                                try:
+                                                        err_msg = response.json().get(
+                                                            "message", response.text
+                                                        )
+                                                except ValueError:
+                                                        err_msg = response.text
+                                                st.error(f"Registration error: {err_msg}")
+                        else:
+                                st.error("Please fill in all fields.")
+
 
     else:
         # Authenticated user view
