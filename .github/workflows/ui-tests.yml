@@ -1,0 +1,77 @@
+name: UI Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to run tests on'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Set up Chrome
+        if: ${{ github.event.inputs.browser == 'chrome' }}
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Set up Firefox
+        if: ${{ github.event.inputs.browser == 'firefox' }}
+        uses: browser-actions/setup-firefox@latest
+
+      - name: Install Selenium drivers
+        run: |
+          poetry run python -m pip install webdriver-manager
+
+      - name: Start application (background)
+        run: |
+          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5  # Wait for app to start
+
+      - name: Run frontend Streamlit app (background)
+        run: |
+          cd frontend && poetry run streamlit run streamlit_app.py &
+          sleep 10  # Wait for frontend to start
+
+      - name: Run UI tests
+        env:
+          BROWSER: ${{ github.event.inputs.browser }}
+        run: poetry run pytest tests/ui/ -v
+
+      - name: Generate test report
+        if: always()
+        run: |
+          mkdir -p output_artifacts/ui_test_results
+          if [ -d "ui_test_screenshots" ]; then
+            cp -r ui_test_screenshots output_artifacts/ui_test_results/
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: output_artifacts/ui_test_results/
+          retention-days: 5 

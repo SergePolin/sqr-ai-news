@@ -28,7 +28,7 @@ jobs:
         run: poetry install
 
       - name: Run tests with coverage
-        run: poetry run pytest --cov=app --cov-report=xml --cov-report=term
+        run: poetry run pytest -k "not ui" --cov=app --cov-report=xml --cov-report=term
 
       - name: Generate HTML coverage report
         run: poetry run coverage html
