@@ -8,8 +8,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.db.crud import (add_bookmark, create_or_update_article,
-                         get_user_by_username, is_bookmarked)
+from app.db.crud import (
+    add_bookmark,
+    create_or_update_article,
+    get_user_by_username,
+    is_bookmarked,
+)
 from app.db.models import Bookmark, NewsArticle, User
 from app.main import app
 

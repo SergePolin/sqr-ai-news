@@ -1,5 +1,6 @@
 import logging
 import time
+
 # from typing import List
 # import uuid
 from datetime import datetime
@@ -7,16 +8,22 @@ from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
-                     status)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.ai import generate_article_category, generate_article_summary
 from app.core.dependencies import get_current_active_user
-from app.db.crud import (add_bookmark, add_user_channel,
-                         create_or_update_article, get_article_by_url,
-                         get_articles, get_user_bookmarks, get_user_channels,
-                         is_bookmarked, remove_bookmark)
+from app.db.crud import (
+    add_bookmark,
+    add_user_channel,
+    create_or_update_article,
+    get_article_by_url,
+    get_articles,
+    get_user_bookmarks,
+    get_user_channels,
+    is_bookmarked,
+    remove_bookmark,
+)
 from app.db.database import get_db
 from app.db.models import NewsArticle as NewsArticleModel
 from app.db.models import User

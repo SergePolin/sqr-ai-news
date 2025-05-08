@@ -4,8 +4,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.core.ai import (client, client_type, generate_article_category,
-                         generate_article_summary)
+from app.core.ai import (
+    client,
+    client_type,
+    generate_article_category,
+    generate_article_summary,
+)
 
 # Set up detailed logging
 logging.basicConfig(level=logging.DEBUG)

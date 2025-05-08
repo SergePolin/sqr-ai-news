@@ -6,8 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_active_user
 from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
-from app.db.crud import (authenticate_user, create_user, get_user_by_email,
-                         get_user_by_username)
+from app.db.crud import (
+    authenticate_user,
+    create_user,
+    get_user_by_email,
+    get_user_by_username,
+)
 from app.db.database import get_db
 from app.db.models import User
 from app.schemas.user import Token, UserCreate, UserResponse

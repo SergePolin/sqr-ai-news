@@ -6,11 +6,20 @@ import pytest
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
-from app.db.crud import (add_bookmark, add_user_channel,
-                         create_or_update_article, delete_channel,
-                         get_article_by_url, get_articles, get_channel,
-                         get_user_bookmarks, get_user_channels, is_bookmarked,
-                         remove_bookmark, update_channel)
+from app.db.crud import (
+    add_bookmark,
+    add_user_channel,
+    create_or_update_article,
+    delete_channel,
+    get_article_by_url,
+    get_articles,
+    get_channel,
+    get_user_bookmarks,
+    get_user_channels,
+    is_bookmarked,
+    remove_bookmark,
+    update_channel,
+)
 from app.db.models import Bookmark, NewsArticle, User, UserChannels
 
 # Set up detailed logging
