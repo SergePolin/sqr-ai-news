@@ -1,4 +1,4 @@
-import json
+# import json  # Unused import
 import logging
 from datetime import datetime
 from unittest.mock import MagicMock, patch
@@ -8,10 +8,12 @@ import pytest
 import requests
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
+# from sqlalchemy.orm import Session  # Unused import
 from app.db.crud import create_or_update_article, get_user_by_username
-from app.db.models import NewsArticle, User, UserChannels
+
+# from app.db.models import User, UserChannels  # Unused import
+from app.db.models import NewsArticle
 from app.main import app
 
 # Set up detailed logging
@@ -365,3 +367,30 @@ def test_list_user_bookmarks(
     data = response.json()
     print(f"Test article: {article.title}, Response: {data}")
     assert len(data) == 1
+
+
+def test_get_news_channel_not_found(client, mock_db_session):
+    """Test getting news when the channel doesn't exist."""
+    # Mock the get_channel function to return None
+    with patch("app.api.feed.crud.get_channel", return_value=None):
+        # Call the API
+        response = client.get("/api/feed/news/invalid-channel")
+        # Check response
+        assert response.status_code == 404  # Adding assertion for unused variable
+
+
+def test_process_new_articles(client, mock_db_session):
+    """Test processing new articles."""
+    # Mock get_channel
+    with patch("app.api.feed.crud.get_channel", return_value=MockChannel()):
+        # Mock get_user_channel to return True
+        with patch("app.api.feed.crud.get_user_channel", return_value=True):
+            # Mock process_articles
+            with patch(
+                "app.api.feed.ai_processor.process_articles", return_value=None
+            ) as mock_process:
+                # Call the API
+                response = client.post("/api/feed/process/123")
+                # Check response and verify mock was called
+                assert response.status_code == 200
+                mock_process.assert_called_once()  # Use mock to avoid unused variable

@@ -7,12 +7,12 @@ import time
 import pytest
 import requests
 from selenium import webdriver
-
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+# from selenium.webdriver.common.keys import Keys  # Unused import
 
 # from urllib.parse import urlparse
 
@@ -419,8 +419,8 @@ def test_search_functionality(driver):
     ]
 
     # We want to find any search-related elements, but not fail if not present
-    # since we might not have loaded the main content fully
-    search_element = try_multiple_selectors(driver, search_selectors, timeout=5)
+    # Intentionally not using the result, just checking for UI elements
+    _ = try_multiple_selectors(driver, search_selectors, timeout=5)
 
     # Check for any sidebar content to confirm the UI loaded
     ui_elements = [
@@ -459,3 +459,22 @@ def test_category_filter(driver):
     assert sidebar, "Sidebar not found after login"
 
     # Test passes if we can log in and see the sidebar
+
+
+def test_login_page_elements(driver, base_url, wait):
+    """Test login page elements."""
+    # Navigate to the login page
+    driver.get(f"{base_url}/login")
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+    # Check for presence of required elements
+    assert (
+        driver.find_element(By.ID, "username") is not None
+    ), "Username field not found"
+    assert (
+        driver.find_element(By.ID, "password") is not None
+    ), "Password field not found"
+
+    # Check for login button with correct text - split long line
+    login_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    assert "Login" in login_button.text, "Login button not found or has incorrect text"

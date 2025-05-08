@@ -89,7 +89,7 @@ graph LR
 
 The application follows a clean architecture pattern with separation of concerns:
 
-```
+```bash
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Frontend  │━━━━│  API Layer  │━━━━│  Services   │━━━━│  Data Layer │
 │  (Streamlit)│    │  (FastAPI)  │    │ (Business   │    │ (SQLAlchemy │

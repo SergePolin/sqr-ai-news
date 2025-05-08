@@ -4,9 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.core.ai import (
-    client,
-    client_type,
+from app.core.ai import (  # client,  # Unused import; client_type,  # Unused import
     generate_article_category,
     generate_article_summary,
 )
@@ -17,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Sample test data
 SAMPLE_ARTICLE = """
-Scientists have discovered a new species of deep-sea fish that can survive 
+Scientists have discovered a new species of deep-sea fish that can survive
 extreme pressure. The fish, named Pseudoliparis swirei, was found in the Mariana Trench
 at depths of up to 8,000 meters. The discovery could help researchers understand
 how organisms adapt to extreme conditions. The study was published in the journal
@@ -227,3 +225,22 @@ def test_client_initialization_with_valid_credentials(setup_env):
         assert app.core.ai.client is not None
         assert app.core.ai.client_type == "azure"
         logger.debug("Client initialization test passed")
+
+
+def test_fallback_to_simple_summary():
+    """Test fallback to simple summary when OpenAI API fails."""
+    article_content = "This article discusses important technological advancements in AI and machine learning."
+
+    with patch("app.core.ai.get_openai_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = Exception("API error")
+        mock_get_client.return_value = mock_client
+
+        summary = generate_article_summary(article_content)
+
+        # The simple summary should return a truncated version of the content
+        expected_summary = (
+            "This article discusses important technological advancements in AI and"
+        )
+        assert summary.startswith(expected_summary)
+        mock_client.chat.completions.create.assert_called_once()
