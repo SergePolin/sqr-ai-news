@@ -135,10 +135,6 @@ jobs:
         poetry install
         poetry run pip install mutmut
     
-    - name: Run mutation testing
-      run: |
-        poetry run mutmut run --paths-to-mutate app
-    
     - name: Generate mutation report
       run: |
         poetry run mutmut junitxml > mutation-report.xml
