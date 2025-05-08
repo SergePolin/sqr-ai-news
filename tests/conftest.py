@@ -4,13 +4,13 @@ Common test fixtures for all tests.
 
 import os
 from datetime import datetime
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from unittest.mock import MagicMock
 
 from app.db.database import Base, get_db
 from app.db.models import NewsArticle
