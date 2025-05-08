@@ -165,7 +165,9 @@ def process_channel_articles(
             return  # Success, exit function
 
         except requests.RequestException as e:
-            logger.error(f"Request error (attempt {attempt + 1}/{retry_count}): {str(e)}")
+            logger.error(
+                f"Request error (attempt {attempt + 1}/{retry_count}): {str(e)}"
+            )
             if attempt < retry_count - 1:
                 sleep_time = 5 * (attempt + 1)  # Longer exponential backoff
                 logger.info(f"Retrying in {sleep_time} seconds")

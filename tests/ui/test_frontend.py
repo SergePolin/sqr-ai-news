@@ -1,21 +1,23 @@
 """
 UI tests using Selenium.
 """
-import pytest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
+
 import time
-from selenium.webdriver.common.keys import Keys
+
+import pytest
 import requests
-# from urllib.parse import urlparse
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
 
 # Configure Chrome options for headless operation
 @pytest.fixture(scope="module")
 def chrome_options():
+    """
+    Configure Chrome options for headless testing.
+    Returns Chrome options object with appropriate settings.
+    """
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
@@ -80,14 +82,13 @@ def selenium_register(driver, username, email, password):
         time.sleep(2)  # Allow Streamlit to fully load
         print(f"[DEBUG] Page title: {driver.title}")
         print(f"[DEBUG] Current URL: {driver.current_url}")
-        print(
-            f"[DEBUG] Page source (start):\n{driver.page_source[:1000]}\n...")
+        print(f"[DEBUG] Page source (start):\n{driver.page_source[:1000]}\n...")
         # Switch to registration tab - try multiple approaches
         reg_tab_selectors = [
             (By.XPATH, "//button[.//p[text()='Register']]"),
             (By.XPATH, "//button[contains(.,'Register')]"),
             (By.XPATH, "//button[contains(@id, 'tab-1')]"),
-            (By.CSS_SELECTOR, "[data-baseweb='tab']:nth-child(2)")
+            (By.CSS_SELECTOR, "[data-baseweb='tab']:nth-child(2)"),
         ]
         reg_tab = try_multiple_selectors(driver, reg_tab_selectors)
         if reg_tab:
@@ -99,20 +100,22 @@ def selenium_register(driver, username, email, password):
         username_selectors = [
             (
                 By.XPATH,
-                "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Username']"
+                "//div[@role='tabpanel' and not(@hidden)]//input[@aria-label='Username']",
             ),
             (
                 By.XPATH,
-                "//div[@role='tabpanel' and not(@hidden)]//label[contains(., 'Username')]/following-sibling::div//input"
+                "//div[@role='tabpanel' and not(@hidden)]"
+                "//label[contains(., 'Username')]"
+                "/following-sibling::div//input",
             ),
             (
                 By.XPATH,
-                "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Username')]/following::input"
+                "//div[@role='tabpanel' and not(@hidden)]//div[contains(., 'Username')]/following::input",
             ),
             (
                 By.CSS_SELECTOR,
-                "div[role='tabpanel']:not([hidden]) input[aria-label='Username']"
-            )
+                "div[role='tabpanel']:not([hidden]) input[aria-label='Username']",
+            ),
         ]
 
         username_input = try_multiple_selectors(driver, username_selectors)
@@ -137,7 +140,7 @@ def selenium_register(driver, username, email, password):
                 (
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//input[@aria-label='Email']"
-                )
+                ),
             ),
             (
                 By.XPATH,
@@ -145,22 +148,19 @@ def selenium_register(driver, username, email, password):
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//label[contains(., 'Email')]/following-sibling::div"
                     "//input"
-                )
+                ),
             ),
             (
                 By.XPATH,
                 (
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//div[contains(., 'Email')]/following::input"
-                )
+                ),
             ),
             (
                 By.CSS_SELECTOR,
-                (
-                    "div[role='tabpanel']:not([hidden]) "
-                    "input[aria-label='Email']"
-                )
-            )
+                ("div[role='tabpanel']:not([hidden]) " "input[aria-label='Email']"),
+            ),
         ]
 
         email_input = try_multiple_selectors(driver, email_selectors)
@@ -174,7 +174,7 @@ def selenium_register(driver, username, email, password):
                     f"name={inp.get_attribute('name')}, "
                     f"placeholder={inp.get_attribute('placeholder')}, "
                     f"value={inp.get_attribute('value')}"
-                    )
+                )
             print(driver.page_source)
             return False
         password_selectors = [
@@ -183,7 +183,7 @@ def selenium_register(driver, username, email, password):
                 (
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//input[@aria-label='Password']"
-                )
+                ),
             ),
             (
                 By.XPATH,
@@ -191,7 +191,7 @@ def selenium_register(driver, username, email, password):
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//label[contains(., 'Password')]/following-sibling::div"
                     "//input[@type='password']"
-                )
+                ),
             ),
             (
                 By.XPATH,
@@ -199,15 +199,12 @@ def selenium_register(driver, username, email, password):
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//div[contains(., 'Password')]/following::input"
                     "[@type='password']"
-                )
+                ),
             ),
             (
                 By.CSS_SELECTOR,
-                (
-                    "div[role='tabpanel']:not([hidden]) "
-                    "input[aria-label='Password']"
-                )
-            )
+                ("div[role='tabpanel']:not([hidden]) " "input[aria-label='Password']"),
+            ),
         ]
 
         password_input = try_multiple_selectors(driver, password_selectors)
@@ -232,28 +229,23 @@ def selenium_register(driver, username, email, password):
         email_input.send_keys(email)
         password_input.clear()
         password_input.send_keys(password)
-        
+
         register_selectors = [
             (
                 By.XPATH,
                 (
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//button[.//p[text()='Register']]"
-                )
+                ),
             ),
             (
                 By.XPATH,
                 (
                     "//div[@role='tabpanel' and not(@hidden)]"
                     "//button[contains(., 'Register')]"
-                )
+                ),
             ),
-            (
-                By.CSS_SELECTOR,
-                (
-                    "div[role='tabpanel']:not([hidden]) button"
-                )
-            )
+            (By.CSS_SELECTOR, ("div[role='tabpanel']:not([hidden]) button")),
         ]
 
         register_button = try_multiple_selectors(driver, register_selectors)
@@ -282,7 +274,7 @@ def selenium_login(driver, username, password):
             (By.XPATH, "//button[.//p[text()='Login']]"),
             (By.XPATH, "//button[contains(.,'Login')]"),
             (By.XPATH, "//button[contains(@id, 'tab-0')]"),
-            (By.CSS_SELECTOR, "[data-baseweb='tab']:nth-child(1)")
+            (By.CSS_SELECTOR, "[data-baseweb='tab']:nth-child(1)"),
         ]
 
         login_tab = try_multiple_selectors(driver, login_tab_selectors)
@@ -292,27 +284,13 @@ def selenium_login(driver, username, password):
 
         # Find username input
         username_selectors = [
+            (By.XPATH, "//input[@aria-label='Username']"),
             (
                 By.XPATH,
-                "//input[@aria-label='Username']"
+                ("//label[contains(., 'Username')]" "/following-sibling::div//input"),
             ),
-            (
-                By.XPATH,
-                (
-                    "//label[contains(., 'Username')]"
-                    "/following-sibling::div//input"
-                )
-            ),
-            (
-                By.XPATH,
-                (
-                    "//div[contains(., 'Username')]/following::input"
-                )
-            ),
-            (
-                By.CSS_SELECTOR,
-                "input[type='text']"
-            )
+            (By.XPATH, ("//div[contains(., 'Username')]/following::input")),
+            (By.CSS_SELECTOR, "input[type='text']"),
         ]
 
         username_input = try_multiple_selectors(driver, username_selectors)
@@ -323,10 +301,12 @@ def selenium_login(driver, username, password):
         # Find password input
         password_selectors = [
             (By.XPATH, "//input[@aria-label='Password']"),
-            (By.XPATH,
-             "//label[contains(., 'Password')]/following-sibling::div//input"),
+            (
+                By.XPATH,
+                "//label[contains(., 'Password')]/following-sibling::div//input",
+            ),
             (By.XPATH, "//div[contains(., 'Password')]/following::input"),
-            (By.CSS_SELECTOR, "input[type='password']")
+            (By.CSS_SELECTOR, "input[type='password']"),
         ]
 
         password_input = try_multiple_selectors(driver, password_selectors)
@@ -344,7 +324,7 @@ def selenium_login(driver, username, password):
         login_selectors = [
             (By.XPATH, "//button[.//p[text()='Login']]"),
             (By.XPATH, "//button[contains(., 'Login')]"),
-            (By.CSS_SELECTOR, "button.ef3psqc12")
+            (By.CSS_SELECTOR, "button.ef3psqc12"),
         ]
 
         login_button = try_multiple_selectors(driver, login_selectors)
@@ -373,17 +353,23 @@ def test_homepage_shows_login(driver):
     driver.get("http://localhost:8501")
     time.sleep(2)
     # Check for heading with app title
-    heading = try_multiple_selectors(driver, [
-        (By.XPATH, "//h1[contains(., 'AI-Powered News Aggregator')]"),
-        (By.TAG_NAME, "h1")
-    ])
+    heading = try_multiple_selectors(
+        driver,
+        [
+            (By.XPATH, "//h1[contains(., 'AI-Powered News Aggregator')]"),
+            (By.TAG_NAME, "h1"),
+        ],
+    )
     assert heading and heading.is_displayed(), "App title not found"
     # Check for login or registration form
-    form = try_multiple_selectors(driver, [
-        (By.XPATH, "//h3[contains(., 'Log into your account')]"),
-        (By.XPATH, "//button[contains(., 'Login')]"),
-        (By.XPATH, "//button[contains(., 'Register')]")
-    ])
+    form = try_multiple_selectors(
+        driver,
+        [
+            (By.XPATH, "//h3[contains(., 'Log into your account')]"),
+            (By.XPATH, "//button[contains(., 'Login')]"),
+            (By.XPATH, "//button[contains(., 'Register')]"),
+        ],
+    )
     assert form and form.is_displayed(), "Login/registration form not found"
 
 
@@ -392,10 +378,11 @@ def test_articles_list(driver):
     unique_username = f"user_{int(time.time())}"
     email = f"{unique_username}@example.com"
     password = "testpassword"
-    assert selenium_register(driver, unique_username,
-                             email, password), "Registration failed"
+    assert selenium_register(
+        driver, unique_username, email, password
+    ), "Registration failed"
     assert selenium_login(driver, unique_username, password), "Login failed"
-    
+
     # After login, check for any Streamlit main area content to confirm we're on the main page
     main_content_selectors = [
         (By.XPATH, "//div[contains(@class, 'main')]"),
@@ -404,12 +391,12 @@ def test_articles_list(driver):
         (By.XPATH, "//*[contains(text(), 'Channel')]"),
         (By.XPATH, "//*[contains(text(), 'News')]"),
         (By.XPATH, "//*[contains(text(), 'Enter')]"),
-        (By.CSS_SELECTOR, "[data-testid]")
+        (By.CSS_SELECTOR, "[data-testid]"),
     ]
-    
+
     main_content = try_multiple_selectors(driver, main_content_selectors, timeout=10)
     assert main_content, "Main content not found after login"
-    
+
     # Test passes if we can log in and see main content
 
 
@@ -418,33 +405,34 @@ def test_search_functionality(driver):
     unique_username = f"user_{int(time.time())}"
     email = f"{unique_username}@example.com"
     password = "testpassword"
-    assert selenium_register(driver, unique_username,
-                             email, password), "Registration failed"
+    assert selenium_register(
+        driver, unique_username, email, password
+    ), "Registration failed"
     assert selenium_login(driver, unique_username, password), "Login failed"
-    
+
     # After login, try to locate any search input field in the interface
     search_selectors = [
         (By.XPATH, "//input[contains(@placeholder, 'Search')]"),
         (By.XPATH, "//input[contains(@aria-label, 'Search')]"),
         (By.XPATH, "//*[contains(text(), 'Search')]/following::input"),
-        (By.XPATH, "//section[@data-testid='stSidebar']//input")
+        (By.XPATH, "//section[@data-testid='stSidebar']//input"),
     ]
-    
+
     # We want to find any search-related elements, but not fail if not present
-    # since we might not have loaded the main content fully
-    search_element = try_multiple_selectors(driver, search_selectors, timeout=5)
-    
+    # Intentionally not using the result, just checking for UI elements
+    _ = try_multiple_selectors(driver, search_selectors, timeout=5)
+
     # Check for any sidebar content to confirm the UI loaded
     ui_elements = [
         (By.XPATH, "//section[contains(@data-testid, 'stSidebar')]"),
         (By.XPATH, "//button"),
         (By.XPATH, "//input"),
-        (By.XPATH, "//*[contains(@class, 'streamlit')]")
+        (By.XPATH, "//*[contains(@class, 'streamlit')]"),
     ]
-    
+
     ui_element = try_multiple_selectors(driver, ui_elements, timeout=10)
     assert ui_element, "No UI elements found after login"
-    
+
     # Test passes if we can log in and see UI elements
 
 
@@ -453,20 +441,39 @@ def test_category_filter(driver):
     unique_username = f"user_{int(time.time())}"
     email = f"{unique_username}@example.com"
     password = "testpassword"
-    assert selenium_register(driver, unique_username,
-                             email, password), "Registration failed"
+    assert selenium_register(
+        driver, unique_username, email, password
+    ), "Registration failed"
     assert selenium_login(driver, unique_username, password), "Login failed"
-    
+
     # After login, check for any sidebar content to confirm the sidebar loads
     sidebar_selectors = [
         (By.XPATH, "//section[contains(@data-testid, 'stSidebar')]"),
         (By.XPATH, "//button[contains(@kind, 'secondary')]"),
         (By.XPATH, "//*[contains(text(), 'Filters')]"),
         (By.XPATH, "//*[contains(text(), 'Actions')]"),
-        (By.XPATH, "//*[contains(text(), 'Search')]")
+        (By.XPATH, "//*[contains(text(), 'Search')]"),
     ]
-    
+
     sidebar = try_multiple_selectors(driver, sidebar_selectors, timeout=10)
     assert sidebar, "Sidebar not found after login"
-    
+
     # Test passes if we can log in and see the sidebar
+
+
+def test_login_page_elements(driver):
+    """Test login page elements."""
+    # Navigate to the login page
+    driver.get("http://localhost:8501/login")
+    # Wait for page to load
+    time.sleep(2)
+    # Check for login form elements
+    form_elements = try_multiple_selectors(
+        driver,
+        [
+            (By.XPATH, "//input[@aria-label='Username']"),
+            (By.XPATH, "//input[@aria-label='Password']"),
+            (By.XPATH, "//button[contains(., 'Login')]"),
+        ]
+    )
+    assert form_elements, "Login form elements not found"

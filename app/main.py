@@ -3,8 +3,10 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 # Load environment variables from .env file
 if os.path.exists(".env"):
@@ -29,6 +31,23 @@ app = FastAPI(
     description="API for an AI-powered news aggregation service",
     version="0.1.0",
 )
+
+
+# Exception Handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Intercept all validation errors and build a user‑friendly response.
+    """
+    for err in exc.errors():
+        # err['loc'] looks like ['body', 'password']
+        if err["loc"][-1] == "password" and err["type"] == "string_too_short":
+            return JSONResponse(
+                status_code=400,
+                content={"message": "Too short password"}
+            )
+    # fallback: if the error is not about the password
+    return JSONResponse(status_code=400, content={"message": "Invalid input"})
 
 # Configure CORS
 app.add_middleware(

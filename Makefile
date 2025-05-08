@@ -19,7 +19,10 @@ clean:
 	find . -type f -name "*.pyd" -delete
 
 lint:
-	poetry run flake8 app tests
+	poetry run ruff check app tests
+
+fix-lint:
+	./scripts/fix_linting.sh
 
 docker-build:
 	docker build -t sqr-ai-news .

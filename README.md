@@ -89,7 +89,7 @@ graph LR
 
 The application follows a clean architecture pattern with separation of concerns:
 
-```
+```bash
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Frontend  │━━━━│  API Layer  │━━━━│  Services   │━━━━│  Data Layer │
 │  (Streamlit)│    │  (FastAPI)  │    │ (Business   │    │ (SQLAlchemy │
@@ -300,6 +300,54 @@ ai-news-aggregator/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Code Quality
+
+### Linting
+
+This project uses Ruff for linting, which is faster and more comprehensive than Flake8.
+
+To run the linter:
+
+```bash
+make lint
+```
+
+To automatically fix linting issues:
+
+```bash
+make fix-lint
+```
+
+The CI pipeline will automatically check for linting issues on every pull request.
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and delivery:
+
+### Quality Gates
+
+All pull requests must pass the following quality gates before merging:
+
+1. **Code Quality Checks**:
+   - Linting (Ruff)
+   - Test coverage ≥ 60%
+   - Security scan (Bandit)
+
+2. **Test Workflows**:
+   - Unit tests
+   - Integration tests
+   - API tests
+
+3. **Performance Testing** (Weekly on main branch):
+   - API response time checks
+   - Load testing with Locust
+
+4. **Security Monitoring** (Weekly on main branch):
+   - Dependency vulnerability scanning
+   - Code security scanning with Bandit
+
+All quality reports are uploaded as artifacts for easy inspection.
+
 Made with ❤️ by Bantiki 🎀 team
 
 ---
@@ -401,6 +449,7 @@ Made with ❤️ by Bantiki 🎀 team
 - **Description**: List all articles bookmarked by the current user
 - **Authentication**: Required
 - **Response**: List of bookmarked articles with full details
+
 
 ### News API Endpoints
 
