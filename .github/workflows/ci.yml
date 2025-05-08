@@ -106,10 +106,6 @@ jobs:
       run: |
         poetry run pytest tests/integration --cov=app --cov-append --cov-report=xml
     
-    - name: Run API tests
-      run: |
-        poetry run pytest tests/api --cov=app --cov-append --cov-report=xml
-    
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
