@@ -372,7 +372,7 @@ def test_list_user_bookmarks(
 def test_get_news_channel_not_found(client, mock_db_session):
     """Test getting news when the channel doesn't exist."""
     # Mock the get_channel function to return None
-    with patch("app.api.feed.crud.get_channel", return_value=None):
+    with patch("app.db.crud.get_channel", return_value=None):
         # Call the API
         response = client.get("/api/feed/news/invalid-channel")
         # Check response
@@ -390,12 +390,12 @@ class MockChannel:
 def test_process_new_articles(client, mock_db_session):
     """Test processing new articles."""
     # Mock get_channel
-    with patch("app.api.feed.crud.get_channel", return_value=MockChannel()):
+    with patch("app.db.crud.get_channel", return_value=MockChannel()):
         # Mock get_user_channel to return True
-        with patch("app.api.feed.crud.get_user_channel", return_value=True):
+        with patch("app.db.crud.get_user_channel", return_value=True):
             # Mock process_articles
             with patch(
-                "app.api.feed.ai_processor.process_articles", return_value=None
+                "app.api.feed.process_channel_articles", return_value=None
             ) as mock_process:
                 # Call the API
                 response = client.post("/api/feed/process/123")

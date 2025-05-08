@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from unittest.mock import MagicMock
 
 from app.db.database import Base, get_db
 from app.db.models import NewsArticle
@@ -41,6 +42,13 @@ def test_db(test_engine):
     finally:
         test_db.rollback()
         test_db.close()
+
+
+@pytest.fixture(scope="function")
+def mock_db_session():
+    """Create a mock database session for tests that need to mock the DB."""
+    mock_session = MagicMock()
+    return mock_session
 
 
 @pytest.fixture(scope="function")

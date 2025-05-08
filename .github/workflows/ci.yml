@@ -87,6 +87,17 @@ jobs:
       run: |
         poetry install
     
+    - name: Start backend API (background)
+      run: |
+        poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        sleep 5  # Wait for app to start
+    
+    - name: Start Streamlit frontend (background)
+      run: |
+        cd frontend
+        poetry run streamlit run streamlit_app.py --server.port=8501 --server.headless=true &
+        sleep 10  # Wait for Streamlit to start
+    
     - name: Run unit tests
       run: |
         poetry run pytest tests/unit --cov=app --cov-report=xml
