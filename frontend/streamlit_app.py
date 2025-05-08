@@ -552,8 +552,7 @@ def main():
                             st.markdown(
                                 (
                                     f"<span style='font-size:1.15rem; "
-                                    f"font-weight:600; "
-                                    # f"color:{article_text_color}'>"
+                                    f"font-weight:600;'>"
                                     f"{title}"
                                     f"</span>"
                                 ),
@@ -576,7 +575,6 @@ def main():
                                 st.markdown(
                                     (
                                         f"<span style='color:"
-                                        # f"{article_text_color}; "
                                         f"font-size:0.95em;'>"
                                         f"Category: "
                                         f"<b>{article.get('category')}</b>"
