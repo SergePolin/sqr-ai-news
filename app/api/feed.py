@@ -9,10 +9,12 @@ from fastapi import (
 from sqlalchemy.orm import Session
 # from typing import List
 # import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+import time
+import logging
 
 from app.db.database import get_db
 from app.db.crud import (
@@ -27,12 +29,21 @@ from app.db.models import User, NewsArticle as NewsArticleModel
 from app.core.ai import generate_article_summary, generate_article_category
 from app.schemas.news import Bookmark, NewsArticle
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/feed", tags=["feed"])
 
 
-def process_channel_articles(channel_alias: str, db: Session):
+def process_channel_articles(channel_alias: str, db: Session, max_articles: int = 90, retry_count: int = 3):
     """
     Background task to fetch and process articles from a channel.
+    
+    Args:
+        channel_alias: The Telegram channel alias to fetch articles from
+        db: Database session
+        max_articles: Maximum number of articles to process in one run
+        retry_count: Number of times to retry on failure
     """
     # Form the request URL for RSShub
     rss_url = (
@@ -47,46 +58,108 @@ def process_channel_articles(channel_alias: str, db: Session):
         )
     }
 
-    try:
-        # RSS Feed parsing
-        response = requests.get(rss_url, headers=headers)
-        rss_feed = feedparser.parse(response.content)
+    logger.info(f"Starting to process articles for channel: {channel_alias}")
+    
+    for attempt in range(retry_count):
+        try:
+            # RSS Feed parsing
+            logger.info(f"Fetching RSS feed from {rss_url}")
+            response = requests.get(rss_url, headers=headers, timeout=15)
+            
+            # Handle rate limiting specifically
+            if response.status_code == 429:
+                retry_after = int(response.headers.get('Retry-After', (attempt + 1) * 5))
+                logger.warning(f"Rate limited (429) - will retry after {retry_after} seconds")
+                time.sleep(retry_after)
+                continue
+                
+            if response.status_code != 200:
+                logger.error(f"Failed to fetch RSS feed: HTTP {response.status_code}")
+                time.sleep(3 + (attempt * 2))  # Wait before retry with increasing backoff
+                continue
+                
+            rss_feed = feedparser.parse(response.content)
+            
+            if not rss_feed.entries:
+                logger.warning(f"No entries found in RSS feed for {channel_alias}")
+                return
+                
+            logger.info(f"Found {len(rss_feed.entries)} entries in feed for {channel_alias}")
+            
+            # Process only up to max_articles
+            processed = 0
+            new_articles = 0
+            
+            for entry in rss_feed.entries[:max_articles]:
+                # Check for duplicate by URL
+                article_url = entry.get("link", "")
+                if not article_url:
+                    logger.warning("Skipping entry without URL")
+                    continue
+                    
+                if get_article_by_url(db, article_url):
+                    logger.debug(f"Skipping duplicate article: {article_url}")
+                    continue
+                
+                # Extract content
+                html_content = entry.get("description", "")
+                soup = BeautifulSoup(html_content, "html.parser")
+                plain_text = soup.get_text()
+                
+                if len(plain_text.strip()) < 50:
+                    logger.warning(f"Article content too short: {article_url}")
+                    continue
+                
+                # Generate AI summary and category
+                logger.info(f"Generating AI summary and category for: {entry.get('title', 'Untitled')}")
+                ai_summary = generate_article_summary(plain_text)
+                category = generate_article_category(
+                    plain_text, entry.get("title", ""))
 
-        for entry in rss_feed.entries:
-            # Check for duplicate by URL
-            article_url = entry.get("link", "")
-            if get_article_by_url(db, article_url):
-                continue  # Skip duplicate
-            # Extract content
-            html_content = entry.get("description", "")
-            soup = BeautifulSoup(html_content, "html.parser")
-            plain_text = soup.get_text()
+                # Prepare article data
+                try:
+                    published_date = datetime.strptime(
+                        entry.get("published", datetime.now().isoformat()),
+                        "%a, %d %b %Y %H:%M:%S %Z"
+                    ) if "published" in entry else datetime.now()
+                except ValueError as e:
+                    logger.error(f"Date parsing error: {str(e)}")
+                    published_date = datetime.now()
+                
+                article_data = {
+                    "title": entry.get("title", ""),
+                    "content": plain_text,
+                    "url": article_url,
+                    "source": channel_alias,
+                    "published_date": published_date,
+                    "ai_summary": ai_summary,
+                    "category": category
+                }
 
-            # Generate AI summary and category
-            ai_summary = generate_article_summary(plain_text)
-            category = generate_article_category(
-                plain_text, entry.get("title", ""))
-
-            # Prepare article data
-            article_data = {
-                "title": entry.get("title", ""),
-                "content": plain_text,
-                "url": article_url,
-                "source": channel_alias,
-                "published_date": datetime.strptime(
-                    entry.get("published", datetime.now().isoformat()),
-                    "%a, %d %b %Y %H:%M:%S %Z"
-                )
-                if "published" in entry else datetime.now(),
-                "ai_summary": ai_summary,
-                "category": category
-            }
-
-            # Create or update article in database
-            create_or_update_article(db, article_data)
-
-    except Exception as e:
-        print(f"Error processing channel {channel_alias}: {str(e)}")
+                # Create or update article in database
+                created = create_or_update_article(db, article_data)
+                processed += 1
+                if created:
+                    new_articles += 1
+                    logger.info(f"Added new article: {article_data['title']}")
+                
+                # Add a delay to avoid overwhelming the AI service and rate limits
+                time.sleep(1.0)
+                
+            logger.info(f"Channel {channel_alias} processed {processed} articles, {new_articles} new")
+            return  # Success, exit function
+            
+        except requests.RequestException as e:
+            logger.error(f"Request error (attempt {attempt+1}/{retry_count}): {str(e)}")
+            if attempt < retry_count - 1:
+                sleep_time = 5 * (attempt + 1)  # Longer exponential backoff
+                logger.info(f"Retrying in {sleep_time} seconds")
+                time.sleep(sleep_time)
+        except Exception as e:
+            logger.error(f"Error processing channel {channel_alias}: {str(e)}")
+            return  # On general error, exit function
+    
+    logger.error(f"Failed to process channel {channel_alias} after {retry_count} attempts")
 
 
 @router.post("/", response_model=ChannelResponse)
@@ -151,7 +224,7 @@ def get_channels_with_articles(
 
     Returns:
     - **List of channels with articles**:
-        Each channel includes its articles with metadata
+        Each channel includes its articles with metadata, sorted by date (newest first)
 
     Raises:
     - **401 Unauthorized**: When the user is not authenticated
@@ -193,6 +266,7 @@ def get_channels_with_articles(
 
     for channel in unique_channels.values():
         # Fetch articles for this channel from the DB (source == channel_alias)
+        # Articles are already sorted by published_date desc (newest first) in get_articles
         articles_db = get_articles(db, source=channel.channel_alias)
         articles = []
         for article in articles_db:
@@ -209,6 +283,13 @@ def get_channels_with_articles(
                 "ai_summary": article.ai_summary,
                 "category": article.category
             })
+            
+        # Double-check articles are properly sorted by published_date (newest first)
+        articles.sort(
+            key=lambda x: x["published_date"] if x["published_date"] else "0", 
+            reverse=True
+        )
+            
         feed_results.append({
             "id": str(channel.id),
             "channel_alias": channel.channel_alias,
@@ -221,10 +302,15 @@ def get_channels_with_articles(
 def update_all_channels(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    max_articles_per_channel: int = Query(90, description="Maximum articles to fetch per channel")
 ):
     """
     Trigger an update to fetch new articles for all user's channels.
+
+    Parameters:
+    - **max_articles_per_channel** (query, optional): 
+        Maximum number of articles to fetch per channel. Default: 90
 
     Returns:
     - **Message**: Confirmation that update has been started
@@ -243,15 +329,32 @@ def update_all_channels(
     Notes:
     - This is an asynchronous operation using background tasks
     - Articles are fetched from Telegram channels via RSS
+    - Rate limiting can occur when too many requests are made
     """
     channels = get_user_channels(db=db, user_id=str(current_user.id))
     if not channels:
         raise HTTPException(
             status_code=404, detail="No channels found for user.")
-    for channel in channels:
+    
+    channel_count = len(channels)
+    logger.info(f"Starting update for {channel_count} channels for user {current_user.username}")
+    
+    # Add small delays between channel processing tasks to avoid overwhelming the RSS service
+    for idx, channel in enumerate(channels):
+        # Add a gradually increasing delay for each channel to avoid rate limiting
         background_tasks.add_task(
-            process_channel_articles, channel.channel_alias, db)
-    return {"message": "Update started for all channels."}
+            process_channel_articles, 
+            channel.channel_alias, 
+            db, 
+            max_articles_per_channel
+        )
+        # Add a small delay between scheduling tasks
+        if idx < len(channels) - 1:
+            time.sleep(0.5)
+    
+    return {
+        "message": f"Update started for {channel_count} channels. New articles will be available shortly."
+    }
 
 
 @router.post(

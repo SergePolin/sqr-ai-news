@@ -1,6 +1,7 @@
 """
 Integration tests for database operations.
 """
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -24,8 +25,9 @@ def test_create_article(test_db):
     test_db.refresh(article)
 
     # Retrieve and verify
-    retrieved_article = test_db.query(NewsArticle).filter(
-        NewsArticle.id == article.id).first()
+    retrieved_article = (
+        test_db.query(NewsArticle).filter(NewsArticle.id == article.id).first()
+    )
     assert retrieved_article is not None
     assert retrieved_article.title == "Integration Test Article"
     assert retrieved_article.source == "Integration Test Source"
@@ -92,8 +94,9 @@ def test_article_update(test_db):
     test_db.commit()
 
     # Retrieve and verify
-    updated_article = test_db.query(NewsArticle).filter(
-        NewsArticle.id == article.id).first()
+    updated_article = (
+        test_db.query(NewsArticle).filter(NewsArticle.id == article.id).first()
+    )
     assert updated_article.title == "Updated Title"
     assert updated_article.content == "Updated content"
     assert updated_article.category == "updated"

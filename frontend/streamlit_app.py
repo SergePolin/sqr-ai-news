@@ -33,11 +33,11 @@ def login_user(username, password):
 
 def add_channel(channel_name, token):
     if not channel_name:
-        st.error("Пожалуйста, введите имя канала.")
+        st.error("Please enter a channel name.")
         return
 
     if not re.match(r"^[A-Za-z0-9_]+$", channel_name):
-        st.error("Имя канала должно содержать только латиницу, цифры и '_'")
+        st.error("Channel name must contain only Latin characters, numbers, and '_'")
         return
 
     response = requests.post(
@@ -47,9 +47,9 @@ def add_channel(channel_name, token):
     )
 
     if response.status_code == 200:
-        st.success(f"Канал @{channel_name} добавлен!")
+        st.success(f"Channel @{channel_name} added!")
     else:
-        st.error(f"Ошибка при добавлении канала: {response.text}")
+        st.error(f"Error adding channel: {response.text}")
 
 
 def clean_html(html_content):
@@ -70,7 +70,7 @@ def clean_html(html_content):
 
 def get_news(token, generate_summaries=False, generate_categories=False):
     if not token:
-        st.error("Вы не авторизованы. Пожалуйста, войдите в систему.")
+        st.error("You are not authorized. Please log in.")
         return []
 
     # Custom CSS for better styling
@@ -134,11 +134,11 @@ def get_news(token, generate_summaries=False, generate_categories=False):
 
     if response.status_code == 200:
         data = response.json()
-        # Проходим по каждому каналу
+        # For each channel
         for channel in data:
-            st.subheader(f"Канал: {channel['channel_alias']}")
+            st.subheader(f"Channel: {channel['channel_alias']}")
             articles = channel.get('articles', [])
-            if articles:  # Проверяем, есть ли статьи
+            if articles:  # Check if there are articles
                 for idx, article in enumerate(articles):
                     # Clean description/content from HTML tags
                     description = clean_html(article.get('description', ''))
@@ -171,16 +171,16 @@ def get_news(token, generate_summaries=False, generate_categories=False):
                         with col2:
                             # Add direct link instead of a button
                             st.markdown(
-                                f"[Читать в Telegram]({link})",
+                                f"[Read on Telegram]({link})",
                                 unsafe_allow_html=False
                             )
 
                         # Add separator between articles
                         st.markdown("---")
             else:
-                st.write(f"Нет статей для канала {channel['channel_alias']}.")
+                st.write(f"No articles for channel {channel['channel_alias']}.")
     else:
-        st.error(f"Ошибка при получении новостей: {response.text}")
+        st.error(f"Error retrieving news: {response.text}")
 
     return []
 
@@ -211,128 +211,138 @@ def remove_bookmark(token, article_id):
 
 def main():
     # Initialize session state
-    if 'token' not in st.session_state:
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
         st.session_state.token = None
-    if 'username' not in st.session_state:
         st.session_state.username = None
-    if 'is_authenticated' not in st.session_state:
-        st.session_state.is_authenticated = False
+        st.session_state.news_loaded = False
+        st.session_state.bookmarked_ids = set()
 
     st.title("AI-Powered News Aggregator")
 
-    # Authentication section
-    if not st.session_state.is_authenticated:
-        tab1, tab2 = st.tabs(["Вход", "Регистрация"])
+    # Login sidebar
+    if not st.session_state.logged_in:
+        with st.sidebar:
+            st.subheader("Log into your account")
+            tab1, tab2 = st.tabs(["Login", "Register"])
+            
+            with tab1:
+                username = st.text_input("Username", key="login_username")
+                password = st.text_input(
+                    "Password", type="password", key="login_password")
 
-        with tab1:
-            st.subheader("Войдите в свой аккаунт")
-            username = st.text_input("Имя пользователя", key="login_username")
-            password = st.text_input(
-                "Пароль", type="password", key="login_password")
-
-            if st.button("Войти"):
-                if username and password:
-                    response = login_user(username, password)
-                    if response.status_code == 200:
-                        data = response.json()
-                        st.session_state.token = data["access_token"]
-                        st.session_state.username = username
-                        st.session_state.is_authenticated = True
-                        st.success("Вход выполнен успешно!")
-                        st.rerun()
+                if st.button("Login", key="login_button"):
+                    if username and password:
+                        with st.spinner("Logging in..."):
+                            response = login_user(username, password)
+                            if response.status_code == 200:
+                                st.session_state.token = response.json()["access_token"]
+                                st.session_state.logged_in = True
+                                st.session_state.username = username
+                                st.success("Login successful!")
+                                st.experimental_rerun()
+                            else:
+                                st.error(
+                                    "Login error. "
+                                    f"({response.status_code}): {response.text}")
                     else:
-                        st.error(
-                            "Ошибка входа. "
-                            "Проверьте ваши учетные данные."
-                        )
-                else:
-                    st.error("Пожалуйста, заполните все поля.")
+                        st.error("Please fill in all fields.")
+            
+            with tab2:
+                reg_username = st.text_input("Username", key="reg_username")
+                reg_email = st.text_input("Email", key="reg_email")
+                reg_password = st.text_input(
+                    "Password", type="password", key="reg_password")
 
-        with tab2:
-            st.subheader("Создайте новый аккаунт")
-            new_username = st.text_input(
-                "Имя пользователя", key="reg_username")
-            new_email = st.text_input("Email", key="reg_email")
-            new_password = st.text_input(
-                "Пароль", type="password", key="reg_password")
-            confirm_password = st.text_input(
-                "Подтвердите пароль", type="password", key="confirm_password")
-
-            if st.button("Зарегистрироваться"):
-                if (
-                    new_username and
-                    new_email and
-                    new_password and
-                    confirm_password
-                ):
-                    if new_password != confirm_password:
-                        st.error("Пароли не совпадают!")
+                if st.button("Register", key="register_button"):
+                    if reg_username and reg_email and reg_password:
+                        with st.spinner("Registering..."):
+                            response = register_user(
+                                reg_username, reg_email, reg_password)
+                            if response.status_code == 201:
+                                st.success("Registration successful! Please log in.")
+                            else:
+                                st.error(f"Registration error: {response.text}")
                     else:
-                        response = register_user(
-                            new_username, new_email, new_password)
-                        if response.status_code in (200, 201):
-                            st.success(
-                                "Регистрация успешна! Теперь вы можете войти.")
-                            # Automatically login
-                            login_response = login_user(
-                                new_username, new_password)
-                            if login_response.status_code == 200:
-                                data = login_response.json()
-                                st.session_state.token = data["access_token"]
-                                st.session_state.username = new_username
-                                st.session_state.is_authenticated = True
-                                st.rerun()
-                        else:
-                            st.error(f"Ошибка регистрации: {response.text}")
-                else:
-                    st.error("Пожалуйста, заполните все поля.")
+                        st.error("Please fill in all fields.")
 
     else:
         # Authenticated user view
-        st.sidebar.write(f"Привет, {st.session_state.username}!")
-        if st.sidebar.button("Выйти"):
+        st.sidebar.write(f"Welcome, {st.session_state.username}!")
+        if st.sidebar.button("Logout"):
             st.session_state.token = None
             st.session_state.username = None
-            st.session_state.is_authenticated = False
+            st.session_state.logged_in = False
+            st.session_state.news_loaded = False
+            st.session_state.bookmarked_ids = set()
             st.rerun()
 
         # Content for authenticated users
-        st.subheader("Добавить новый канал")
-        channel_name_input = st.text_input(
-            "Введите алиас Telegram канала без @, например: TechNews",
-            value="",
-            placeholder="Имя канала"
+        st.subheader("Add new channel")
+        
+        # Initialize suggested channel state if it doesn't exist
+        if "suggested_channel" not in st.session_state:
+            st.session_state.suggested_channel = ""
+            
+        # Get channel name from session state if a suggestion was clicked
+        default_channel = st.session_state.suggested_channel
+        
+        channel_name = st.text_input(
+            "Enter Telegram channel alias without @, e.g.: TechNews",
+            key="channel_name",
+            value=default_channel,
+            placeholder="Channel name"
         )
 
+        # Add suggested channels section
+        st.markdown("### Suggested channels:")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("RBC News", key="rbc_news_btn"):
+                st.session_state.suggested_channel = "rbc_news"
+                st.experimental_rerun()
+                
+        with col2:
+            if st.button("BBC Breaking", key="bbbreaking_btn"):
+                st.session_state.suggested_channel = "bbbreaking"
+                st.experimental_rerun()
+                
+        with col3:
+            if st.button("Market News", key="if_market_news_btn"):
+                st.session_state.suggested_channel = "if_market_news"
+                st.experimental_rerun()
+                
         # Check for prefixes and trim
-        if channel_name_input.startswith("@"):
-            channel_name = channel_name_input[1:]  # Remove '@'
-        elif channel_name_input.startswith("https://t.me/"):
-            channel_name = channel_name_input[len(
+        if channel_name.startswith("@"):
+            channel_name = channel_name[1:]  # Remove '@'
+        elif channel_name.startswith("https://t.me/"):
+            channel_name = channel_name[len(
                 "https://t.me/"):]  # Remove prefix
         else:
-            channel_name = channel_name_input
+            channel_name = channel_name
 
-        if st.button("Добавить канал"):
+        if st.button("Add channel"):
             if channel_name:
                 add_channel(channel_name, st.session_state.token)
+                # Clear the suggested channel after adding
+                st.session_state.suggested_channel = ""
             else:
-                st.error("Пожалуйста, введите имя канала.")
+                st.error("Please enter a channel name.")
 
         # Sidebar filters and actions
         with st.sidebar:
-            st.markdown("## Фильтры и действия")
+            st.markdown("## Filters and Actions")
             show_only_bookmarks = st.checkbox(
-                "Показать только избранное",
+                "Show only bookmarks",
                 value=False,
-                help="Показать только статьи, которые вы добавили в закладки."
+                help="Show only articles you added to bookmarks."
             )
             search_query = st.text_input(
-                "🔍 Поиск по статьям:",
+                "🔍 Search articles:",
                 value="",
                 help=(
-                    "Введите ключевые слова для поиска по заголовку "
-                    "или содержимому статьи."
+                    "Enter keywords to search by title or content of the article."
                 )
             )
             if 'news_data' not in st.session_state:
@@ -345,23 +355,23 @@ def main():
                     cat = article.get('category')
                     if cat:
                         categories.add(cat)
-            categories = sorted(categories)
-            categories.insert(0, 'Все категории')
+            categories = sorted(list(categories))
+            categories.insert(0, 'All categories')
             selected_category = st.selectbox(
-                "📂 Фильтр по категории:",
+                "📂 Filter by category:",
                 categories,
-                help="Показать только статьи выбранной категории."
+                help="Show only articles from the selected category."
             )
-            if st.button("Сбросить фильтры"):
+            if st.button("Reset filters"):
                 search_query = ""
-                selected_category = 'Все категории'
+                selected_category = 'All categories'
                 st.rerun()
             st.markdown("---")
             if st.button(
-                "Обновить статьи",
-                help="Получить последние статьи из каналов Telegram."
+                "Update feeds",
+                help="Get latest articles from Telegram channels."
             ):
-                with st.spinner("Обновление статей из каналов..."):
+                with st.spinner("Updating articles from channels..."):
                     update_response = requests.post(
                         f"{API_URL}/feed/update",
                         headers={
@@ -372,20 +382,20 @@ def main():
                     )
                     if update_response.status_code == 200:
                         st.success(
-                            "Обновление запущено! "
-                            "Проверьте новости через несколько секунд."
+                            "Update started! "
+                            "Check news in a few seconds."
                         )
                     else:
                         st.error(
-                            f"Ошибка при обновлении: {update_response.text}")
+                            f"Error during update: {update_response.text}")
             if (
                 st.button(
-                    "Получить новости",
-                    help="Загрузить и отобразить свежие статьи."
+                    "Get news",
+                    help="Load and display fresh articles."
                 )
                 or st.session_state.news_data is None
             ):
-                with st.spinner("Загрузка новостей..."):
+                with st.spinner("Loading news..."):
                     response = requests.get(
                         (
                             f"{API_URL}/feed?"
@@ -398,10 +408,11 @@ def main():
                     )
                     if response.status_code == 200:
                         st.session_state.news_data = response.json()
-                        st.success("Новости успешно загружены!")
+                        st.session_state.news_loaded = True
+                        st.success("News loaded successfully!")
                     else:
                         st.error(
-                            f"Ошибка при получении новостей: {response.text}")
+                            f"Error retrieving news: {response.text}")
                         st.session_state.news_data = []
 
         # Main content area
@@ -418,18 +429,40 @@ def main():
             'bookmarked_ids' not in st.session_state
             or st.session_state.get('bookmarks_dirty', True)
         ):
-            with st.spinner("Загрузка закладок..."):
+            with st.spinner("Loading bookmarks..."):
                 st.session_state.bookmarked_ids = get_bookmarked_article_ids(
                     st.session_state.token)
                 st.session_state.bookmarks_dirty = False
         bookmarked_ids = st.session_state.bookmarked_ids
         any_articles = False
+        
+        # Helper function to format date and time
+        def format_datetime(date_str):
+            if not date_str:
+                return ""
+            try:
+                # Parse ISO format date
+                from datetime import datetime
+                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                # Format to a readable date and time
+                return dt.strftime("%d %b %Y, %H:%M")
+            except Exception:
+                return date_str
+                
         for channel in news_data:
             articles = channel.get('articles', [])
+            
+            # Sort articles by published_date (newest first)
+            articles = sorted(
+                articles,
+                key=lambda x: x.get('published_date', '0'),
+                reverse=True
+            )
+            
             filtered_articles = [
                 a for a in articles
                 if (
-                    selected_category == 'Все категории'
+                    selected_category == 'All categories'
                     or a.get('category') == selected_category
                 ) and (
                     search_query.strip() == ""
@@ -441,11 +474,11 @@ def main():
                 )
                 and (not show_only_bookmarks or a.get('id') in bookmarked_ids)
             ]
-            st.markdown(f"### Канал: {channel['channel_alias']} ")
+            st.markdown(f"### Channel: {channel['channel_alias']} ")
             st.markdown(
                 (
                     f"<span style='color: #888; font-size: 0.95em;'>"
-                    f"Показано статей: <b>{len(filtered_articles)}</b>"
+                    f"Articles shown: <b>{len(filtered_articles)}</b>"
                     f"</span>"
                 ),
                 unsafe_allow_html=True
@@ -458,6 +491,8 @@ def main():
                     link = article.get('link', '#')
                     article_id = article.get('id')
                     is_bookmarked = article_id in bookmarked_ids
+                    published_date = article.get('published_date')
+                    
                     with st.container():
                         st.markdown(
                             (
@@ -483,13 +518,26 @@ def main():
                                 ),
                                 unsafe_allow_html=True
                             )
+                            
+                            # Display date and time in human readable format
+                            if published_date:
+                                formatted_date = format_datetime(published_date)
+                                st.markdown(
+                                    (
+                                        f"<span style='color: #888; font-size: 0.85em;'>"
+                                        f"📅 {formatted_date}"
+                                        f"</span>"
+                                    ),
+                                    unsafe_allow_html=True
+                                )
+                                
                             if article.get('category'):
                                 st.markdown(
                                     (
                                         f"<span style='color:"
                                         f"{article_text_color}; "
                                         f"font-size:0.95em;'>"
-                                        f"Категория: "
+                                        f"Category: "
                                         f"<b>{article.get('category')}</b>"
                                         f"</span>"
                                     ),
@@ -497,18 +545,18 @@ def main():
                                 )
                             if article.get('ai_summary'):
                                 st.info(article.get('ai_summary'), icon="🤖")
-                            with st.expander("Показать полный текст статьи"):
+                            with st.expander("Show full article text"):
                                 st.markdown(description)
                         with col2:
                             # Bookmark button
                             if article_id is not None:
                                 if is_bookmarked:
                                     if st.button(
-                                        "✅ Убрать из избранного",
+                                        "✅ Remove from bookmarks",
                                         key=f"unbookmark_{article_id}_{idx}"
                                     ):
                                         with st.spinner(
-                                            "Удаление из закладок..."
+                                            "Removing from bookmarks..."
                                         ):
                                             if remove_bookmark(
                                                 st.session_state.token,
@@ -517,23 +565,23 @@ def main():
                                                 tmp = st.session_state
                                                 tmp.bookmarks_dirty = True
                                                 st.success(
-                                                    "Статья удалена "
-                                                    "из избранного!"
+                                                    "Article removed "
+                                                    "from bookmarks!"
                                                 )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Ошибка при удалении "
-                                                    "из избранного."
+                                                    "Error removing "
+                                                    "from bookmarks."
                                                 )
                                 else:
                                     if st.button(
-                                        "🔖 В избранное",
+                                        "🔖 Add to bookmarks",
                                         key=f"bookmark_{article_id}_{idx}"
                                     ):
                                         with st.spinner(
-                                            "Добавление в закладки..."
+                                            "Adding to bookmarks..."
                                         ):
                                             if add_bookmark(
                                                 st.session_state.token,
@@ -542,15 +590,15 @@ def main():
                                                 tst = st.session_state
                                                 tst.bookmarks_dirty = True
                                                 st.success(
-                                                    "Статья добавлена "
-                                                    "в избранное!"
+                                                    "Article added "
+                                                    "to bookmarks!"
                                                 )
                                                 time.sleep(0.5)
                                                 st.rerun()
                                             else:
                                                 st.error(
-                                                    "Ошибка при добавлении "
-                                                    "в избранное."
+                                                    "Error adding "
+                                                    "to bookmarks."
                                                 )
                             st.markdown(
                                 (
@@ -561,7 +609,7 @@ def main():
                                     f"border-radius:6px; "
                                     f"text-decoration:none; font-size:0.98em; "
                                     f"margin-top:8px;'>"
-                                    "Читать в Telegram</a>"
+                                    "Read on Telegram</a>"
                                 ),
                                 unsafe_allow_html=True
                             )
@@ -569,20 +617,39 @@ def main():
             else:
                 st.warning(
                     (
-                        f"Нет статей для выбранной категории "
-                        f"и/или поискового запроса в канале "
+                        f"No articles for selected category "
+                        f"and/or search query in channel "
                         f"{channel['channel_alias']}."
                     )
                 )
         if not any_articles:
             st.info(
                 (
-                    "Нет статей, соответствующих выбранным фильтрам "
-                    "или поисковому запросу. "
-                    "Попробуйте изменить фильтры или обновить статьи."
+                    "No articles matching the selected filters "
+                    "or search query. "
+                    "Try changing filters or updating articles."
                 ),
                 icon="ℹ️"
             )
+
+    # Fix remaining UI elements for channel update
+    if st.session_state.logged_in:
+        with st.sidebar:
+            # Add refresh button
+            st.subheader("Update Feeds")
+            if st.button("Update All Channels", key="update_all"):
+                with st.spinner("Updating articles from channels..."):
+                    update_response = requests.post(
+                        f"{API_URL}/feed/update",
+                        headers={"Authorization": f"Bearer {st.session_state.token}"}
+                    )
+                    if update_response.status_code == 200:
+                        st.success("Channels updated!")
+                        st.session_state.news_loaded = False
+                        st.experimental_rerun()
+                    else:
+                        st.error(
+                            f"Error during update: {update_response.text}")
 
 
 if __name__ == "__main__":

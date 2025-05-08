@@ -1,17 +1,19 @@
 """
 Common test fixtures for all tests.
 """
+
 import os
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from datetime import datetime
 
-from app.main import app
 from app.db.database import Base, get_db
 from app.db.models import NewsArticle
+from app.main import app
 
 
 # Create in-memory test database
@@ -32,8 +34,7 @@ def test_engine():
 @pytest.fixture(scope="function")
 def test_db(test_engine):
     """Create a test database session."""
-    TestSessionLocal = sessionmaker(
-        autocommit=False, autoflush=False, bind=test_engine)
+    TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
     test_db = TestSessionLocal()
     try:
         yield test_db
@@ -102,16 +103,14 @@ def auth_token(client):
     email = "testuser@example.com"
     password = "testpassword"
     # Register user (ignore if already exists)
-    client.post("/auth/register", json={
-        "username": username,
-        "email": email,
-        "password": password
-    })
+    client.post(
+        "/auth/register",
+        json={"username": username, "email": email, "password": password},
+    )
     # Login user
-    response = client.post("/auth/login", data={
-        "username": username,
-        "password": password
-    })
+    response = client.post(
+        "/auth/login", data={"username": username, "password": password}
+    )
     assert response.status_code == 200, f"Login failed: {response.text}"
     token = response.json()["access_token"]
     return token

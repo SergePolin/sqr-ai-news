@@ -2,8 +2,9 @@
 Unit tests for Pydantic schema validation.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
 from app.schemas.news import NewsArticle, NewsArticleBase

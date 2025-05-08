@@ -17,6 +17,8 @@ def get_articles(
 ) -> List[NewsArticle]:
     """
     Get articles with optional filtering by source and category.
+    
+    Returns articles sorted by published_date in descending order (newest first).
     """
     query = db.query(NewsArticle)
 
@@ -25,6 +27,9 @@ def get_articles(
 
     if category:
         query = query.filter(NewsArticle.category == category)
+
+    # Sort by published_date in descending order (newest first)
+    query = query.order_by(NewsArticle.published_date.desc())
 
     return query.offset(skip).limit(limit).all()
 

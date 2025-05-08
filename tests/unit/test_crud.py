@@ -21,8 +21,7 @@ def test_get_article_not_found(test_db):
 
 def test_get_article_by_url(test_db, sample_articles):
     """Test getting an article by URL."""
-    article = crud.get_article_by_url(
-        test_db, url="http://example.com/article1")
+    article = crud.get_article_by_url(test_db, url="http://example.com/article1")
     assert article is not None
     assert article.title == "Test Article 1"
 

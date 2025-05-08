@@ -1,10 +1,8 @@
-from sqlalchemy import (
-    Column, Integer, String,
-    Text, DateTime, Float,
-    UUID, Boolean, ForeignKey
-)
-from sqlalchemy.sql import func
 import uuid
+
+from sqlalchemy import (UUID, Boolean, Column, DateTime, Float, ForeignKey,
+                        Integer, String, Text)
+from sqlalchemy.sql import func
 
 from app.db.database import Base
 
@@ -54,6 +52,5 @@ class Bookmark(Base):
     __tablename__ = "bookmarks"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String(255), index=True, nullable=False)
-    article_id = Column(Integer, ForeignKey(
-        "news_articles.id"), nullable=False)
+    article_id = Column(Integer, ForeignKey("news_articles.id"), nullable=False)
     created_at = Column(DateTime, default=func.now())

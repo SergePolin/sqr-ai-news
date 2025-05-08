@@ -1,20 +1,21 @@
-from fastapi import FastAPI, status
-from fastapi.middleware.cors import CORSMiddleware
 # import signal
 # import sys
 import os
+
 from dotenv import load_dotenv
+from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables from .env file
 if os.path.exists(".env"):
     load_dotenv()
     print("Loaded environment variables from .env file")
 
-from app.api.routes import router as news_router
-from app.api.feed import router as feed_router
 from app.api.auth import router as auth_router
-from app.db.database import engine
+from app.api.feed import router as feed_router
+from app.api.routes import router as news_router
 from app.db import models
+from app.db.database import engine
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -46,7 +47,7 @@ app.include_router(auth_router)
     status_code=status.HTTP_200_OK,
     summary="Root endpoint",
     description="Returns a welcome message for the API",
-    tags=["Health"]
+    tags=["Health"],
 )
 async def root():
     """
@@ -68,11 +69,7 @@ async def root():
     responses={
         200: {
             "description": "API is healthy",
-            "content": {
-                "application/json": {
-                    "example": {"status": "ok"}
-                }
-            }
+            "content": {"application/json": {"example": {"status": "ok"}}},
         },
         503: {
             "description": "API is unhealthy",
@@ -80,12 +77,12 @@ async def root():
                 "application/json": {
                     "example": {
                         "status": "error",
-                        "details": "Database connection failed"
+                        "details": "Database connection failed",
                     }
                 }
-            }
-        }
-    }
+            },
+        },
+    },
 )
 async def health_check():
     # Check Azure OpenAI credentials
@@ -94,17 +91,14 @@ async def health_check():
     openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
     ai_status = {
-        "azure_openai_configured": bool(
-            azure_openai_key and azure_openai_endpoint
-        ),
-        "openai_configured": bool(openai_api_key)
+        "azure_openai_configured": bool(azure_openai_key and azure_openai_endpoint),
+        "openai_configured": bool(openai_api_key),
     }
 
-    return {
-        "status": "ok",
-        "ai_status": ai_status
-    }
+    return {"status": "ok", "ai_status": ai_status}
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

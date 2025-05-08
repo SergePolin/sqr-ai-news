@@ -29,6 +29,7 @@ This app:
 ### Step 1: Get Ready
 
 Make sure you have these things installed on your computer:
+
 - **Python** version 3.11
 - **Poetry** for installing packages
 - **Git** for downloading the code (optional)
@@ -193,7 +194,6 @@ This app uses these cool technologies:
 
 Made with ❤️ by Bantiki 🎀 team
 
-
 # AI-Powered News Aggregator
 
 This project is a news aggregator service with AI-powered features. It fetches news from multiple sources and provides user authentication, news categorization, and AI-enhanced summarization.
@@ -217,18 +217,21 @@ This project is a news aggregator service with AI-powered features. It fetches n
 ### Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/ai-news-aggregator.git
    cd ai-news-aggregator
    ```
 
 2. Install dependencies using Poetry:
+
    ```
    poetry install
    ```
 
 3. Set up environment variables for Azure OpenAI (required for AI summarization):
    Create a `.env` file in the root directory with:
+
    ```
    AZURE_OPENAI_KEY=your-azure-openai-key
    AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
@@ -239,11 +242,13 @@ This project is a news aggregator service with AI-powered features. It fetches n
 ### Running the Application
 
 1. Run the backend server:
+
    ```
    poetry run python run.py
    ```
 
 2. Run the frontend:
+
    ```
    cd frontend
    poetry run streamlit run streamlit_app.py
@@ -258,9 +263,11 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 ### Authentication Endpoints
 
 #### Register User
+
 - **Endpoint**: `POST /auth/register`
 - **Description**: Register a new user in the system
 - **Request Body**:
+
   ```json
   {
     "username": "johndoe",
@@ -268,38 +275,46 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
     "password": "securepassword123"
   }
   ```
+
 - **Response**: User information excluding password (201 Created)
 - **Errors**: 400 Bad Request if username or email already registered
 
 #### User Login
+
 - **Endpoint**: `POST /auth/login`
 - **Description**: OAuth2 compatible token login to obtain JWT access token
 - **Request Format**: Form data with username and password
 - **Response**: JWT token for authenticated API access
+
   ```json
   {
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "token_type": "bearer"
   }
   ```
+
 - **Errors**: 401 Unauthorized if credentials are incorrect
 
 ### News Feed Endpoints
 
 #### Add Channel
+
 - **Endpoint**: `POST /feed/`
 - **Description**: Add a new Telegram channel to user's feed and process its articles
 - **Authentication**: Required
 - **Request Body**:
+
   ```json
   {
     "Channel_alias": "@channelname"
   }
   ```
+
 - **Response**: Created channel information
 - **Notes**: Starts background task to fetch articles and generate AI summaries
 
 #### Get User's Channels with Articles
+
 - **Endpoint**: `GET /feed/`
 - **Description**: Retrieve all channels the user is subscribed to, along with their articles
 - **Authentication**: Required
@@ -309,6 +324,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Response**: List of channels with their articles and metadata
 
 #### Update All Channels
+
 - **Endpoint**: `POST /feed/update`
 - **Description**: Trigger an update to fetch new articles for all user's subscribed channels
 - **Authentication**: Required
@@ -316,6 +332,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Errors**: 404 Not Found if no channels found for user
 
 #### Add Article Bookmark
+
 - **Endpoint**: `POST /feed/bookmarks/{article_id}`
 - **Description**: Add an article to user's bookmarks for later reading
 - **Authentication**: Required
@@ -324,6 +341,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Errors**: 404 Not Found if article not found
 
 #### Remove Article Bookmark
+
 - **Endpoint**: `DELETE /feed/bookmarks/{article_id}`
 - **Description**: Remove an article from user's bookmarks
 - **Authentication**: Required
@@ -332,6 +350,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Errors**: 404 Not Found if bookmark not found
 
 #### List User Bookmarks
+
 - **Endpoint**: `GET /feed/bookmarks`
 - **Description**: List all articles bookmarked by the current user
 - **Authentication**: Required
@@ -340,6 +359,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 ### News API Endpoints
 
 #### Get Articles
+
 - **Endpoint**: `GET /api/news/articles/`
 - **Description**: Retrieve news articles with optional filtering
 - **Authentication**: Required
@@ -351,6 +371,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Response**: List of articles matching filter criteria
 
 #### Get Specific Article
+
 - **Endpoint**: `GET /api/news/articles/{article_id}`
 - **Description**: Retrieve a specific news article by ID
 - **Authentication**: Required
@@ -359,6 +380,7 @@ The API documentation is available at `http://localhost:8000/docs` when the serv
 - **Errors**: 404 Not Found if article not found
 
 #### Get News Sources
+
 - **Endpoint**: `GET /api/news/sources/`
 - **Description**: Get a list of all available news sources in the system
 - **Authentication**: Required
@@ -377,6 +399,7 @@ The application uses Azure OpenAI to generate concise summaries of news articles
 ## Testing
 
 Run tests with:
+
 ```
 poetry run pytest
 ```

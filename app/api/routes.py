@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.db.database import get_db
-from app.db import crud
-from app.schemas.news import NewsArticle
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.core.dependencies import get_current_active_user
+from app.db import crud
+from app.db.database import get_db
 from app.db.models import User
+from app.schemas.news import NewsArticle
 
 router = APIRouter(prefix="/api/news", tags=["news"])
 
@@ -18,7 +19,7 @@ def read_articles(
     source: Optional[str] = None,
     category: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Retrieve news articles with optional filtering.
@@ -54,7 +55,8 @@ def read_articles(
     ```
     """
     articles = crud.get_articles(
-        db, skip=skip, limit=limit, source=source, category=category)
+        db, skip=skip, limit=limit, source=source, category=category
+    )
     return articles
 
 
@@ -62,7 +64,7 @@ def read_articles(
 def read_article(
     article_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Retrieve a specific news article by ID.
@@ -99,8 +101,7 @@ def read_article(
 
 @router.get("/sources/", response_model=List[str])
 def get_sources(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)
 ):
     """
     Get a list of all available news sources.

@@ -1,7 +1,8 @@
-from locust import HttpUser, task, between
 # import time
 import pytest
-pytest.skip('Locust file, skip in pytest collection', allow_module_level=True)
+from locust import HttpUser, between, task
+
+pytest.skip("Locust file, skip in pytest collection", allow_module_level=True)
 """
 Performance tests using Locust.
 

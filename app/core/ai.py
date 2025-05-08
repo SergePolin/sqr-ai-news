@@ -67,7 +67,7 @@ def generate_article_summary(
         max_length: Maximum length of the summary in characters
 
     Returns:
-        A summary of the article or None if summarization fails
+        A summary of the article in English or None if summarization fails
     """
     if not client:
         logger.warning(
@@ -80,14 +80,15 @@ def generate_article_summary(
 
     try:
         prompt = (
-            "Summarize the following news article in a concise summary.\n"
+            "Summarize the following news article in a concise summary in English, "
+            "regardless of the original language of the article.\n"
             "Keep the summary informative and factual. Maximum length: "
             f"{max_length} characters.\n\n"
 
             "Article:\n"
             f"{content}\n\n"
 
-            "Summary:"
+            "Summary in English:"
         )
 
         # Different API calls based on client type
@@ -99,7 +100,8 @@ def generate_article_summary(
                         "role": "system",
                         "content": (
                             "You are a helpful assistant "
-                            "that summarizes news articles."
+                            "that summarizes news articles in English, "
+                            "regardless of the original language."
                         )
                     },
                     {"role": "user", "content": prompt}
@@ -116,7 +118,8 @@ def generate_article_summary(
                         "role": "system",
                         "content": (
                             "You are a helpful assistant "
-                            "that summarizes news articles."
+                            "that summarizes news articles in English, "
+                            "regardless of the original language."
                         )
                     },
                     {"role": "user", "content": prompt}
@@ -142,7 +145,7 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
         title: The article title
 
     Returns:
-        A category for the article or None if categorization fails
+        A category for the article in English or None if categorization fails
     """
     if not client:
         logger.warning(
@@ -165,14 +168,14 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
         prompt = (
             "Categorize the following news article into ONE "
             f"of these categories: {categories_str}. "
-            "Respond with just the category name, nothing else.\n\n"
+            "Respond with just the category name in English, nothing else.\n\n"
 
             f"Title: {title}\n\n"
 
             "Article:\n"
             f"{content[:1000]}  # Using first 1000 chars for efficiency\n\n"
 
-            "Category:"
+            "Category in English:"
         )
 
         # Different API calls based on client type
@@ -184,7 +187,8 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
                         "role": "system",
                         "content": (
                             "You are a helpful assistant "
-                            "that categorizes news articles."
+                            "that categorizes news articles into English categories, "
+                            "regardless of the original language."
                         )
                     },
                     {"role": "user", "content": prompt}
@@ -201,7 +205,8 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
                         "role": "system",
                         "content": (
                             "You are a helpful assistant "
-                            "that categorizes news articles."
+                            "that categorizes news articles into English categories, "
+                            "regardless of the original language."
                         )
                     },
                     {"role": "user", "content": prompt}
