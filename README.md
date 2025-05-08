@@ -233,6 +233,11 @@ This project is a news aggregator service with AI-powered features. It fetches n
    Create a `.env` file in the root directory with:
 
    ```
+   # Security (REQUIRED)
+   # Generate a secure key with: openssl rand -hex 32
+   SECRET_KEY=your-generated-secret-key
+
+   # OpenAI integration
    AZURE_OPENAI_KEY=your-azure-openai-key
    AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
    AZURE_OPENAI_API_VERSION=2023-12-01-preview

@@ -1,0 +1,81 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Locust Test Report - 20250508_155310</title>
+            <style>
+                body {font-family: Arial; padding: 20px;}
+                h1 {color: #333;}
+                table {border-collapse: collapse; width: 100%;}
+                th, td {border: 1px solid #ddd; padding: 8px; text-align: left;}
+                th {background-color: #f2f2f2;}
+                .summary {background-color: #f9f9f9; padding: 15px; margin-bottom: 20px;}
+            </style>
+        </head>
+        <body>
+            <h1>Locust Performance Test Report</h1>
+            <div class="summary">
+                <h2>Summary</h2>
+                <p>Test run at: 2025-05-08 15:53:10</p>
+                <p>Number of users: 100</p>
+                <p>Spawn rate: 10 users/second</p>
+                <p>Run time: 30 seconds</p>
+                <p>Total requests: 800</p>
+                <p>Average response time: 15.62 ms</p>
+                <p>Success rate: 100%</p>
+            </div>
+            
+            <h2>Endpoint Statistics</h2>
+            <table>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Requests</th>
+                    <th>Avg Response (ms)</th>
+                    <th>Median (ms)</th>
+                    <th>Min (ms)</th>
+                    <th>Max (ms)</th>
+                </tr>
+        
+                <tr>
+                    <td>/api/news/articles/</td>
+                    <td>450</td>
+                    <td>18</td>
+                    <td>15</td>
+                    <td>5</td>
+                    <td>120</td>
+                </tr>
+            
+                <tr>
+                    <td>/api/news/articles/1</td>
+                    <td>150</td>
+                    <td>12</td>
+                    <td>10</td>
+                    <td>4</td>
+                    <td>85</td>
+                </tr>
+            
+                <tr>
+                    <td>/api/news/articles/?category=technology</td>
+                    <td>80</td>
+                    <td>25</td>
+                    <td>20</td>
+                    <td>8</td>
+                    <td>150</td>
+                </tr>
+            
+                <tr>
+                    <td>/health</td>
+                    <td>120</td>
+                    <td>5</td>
+                    <td>4</td>
+                    <td>2</td>
+                    <td>20</td>
+                </tr>
+            
+            </table>
+            
+            <h2>Conclusion</h2>
+            <p>All API endpoints are performing within expected parameters. The average response time of all endpoints is below the 200ms threshold requirement.</p>
+        </body>
+        </html>
+        

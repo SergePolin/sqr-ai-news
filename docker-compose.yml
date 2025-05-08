@@ -1,6 +1,8 @@
 services:
   web:
     build: .
+    ports:
+      - "8000:8000"
     expose:
       - 8000
     volumes:
@@ -9,6 +11,8 @@ services:
     environment:
       - DATABASE_URL=sqlite:///./news.db
       - LOG_LEVEL=INFO
+      - SECRET_KEY=${SECRET_KEY}
+      - HOST=0.0.0.0 # Use 0.0.0.0 in container but restrict publicly in production
       # Azure OpenAI settings
       - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
@@ -16,14 +20,14 @@ services:
       - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT:-gpt-4}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     networks:
       - news_network
-  
+
   frontend:
     build: ./frontend
     ports:
@@ -41,7 +45,7 @@ services:
       - web
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8501" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,5 +68,3 @@ networks:
 volumes:
   db_data:
     driver: local
-  
-  

@@ -14,8 +14,12 @@ if os.path.exists(".env"):
 from app.api.auth import router as auth_router
 from app.api.feed import router as feed_router
 from app.api.routes import router as news_router
+from app.core.config import Settings
 from app.db import models
 from app.db.database import engine
+
+# Get settings
+settings = Settings()
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -29,7 +33,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Modify in production to specific origins
+    allow_origins=settings.BACKEND_CORS_ORIGINS,  # Use configured origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -101,4 +105,5 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Use the host and port from settings
+    uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=True)
