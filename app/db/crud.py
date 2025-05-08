@@ -102,13 +102,9 @@ def get_user_channels(db: Session, user_id: str):
     """
     return db.query(UserChannels).filter(UserChannels.user_id == user_id).all()
 
-
-# Read - Получение конкретной подписки
 def get_channel(db: Session, channel_id: str):
     return db.query(UserChannels).filter(UserChannels.id == channel_id).first()
 
-
-# Update - Обновление подписки
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
     db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
@@ -118,7 +114,6 @@ def update_channel(db: Session, channel_id: str, new_channel_alias: str):
     return db_channel
 
 
-# Delete - Удаление подписки
 def delete_channel(db: Session, channel_id: str):
     db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
