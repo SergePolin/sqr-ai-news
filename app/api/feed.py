@@ -15,17 +15,21 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import logging
+import json
+import random
+import re
 
 from app.db.database import get_db
 from app.db.crud import (
     add_user_channel, get_user_channels,
     create_or_update_article, get_articles,
     get_article_by_url, add_bookmark,
-    remove_bookmark, get_user_bookmarks
+    remove_bookmark, get_user_bookmarks,
+    is_bookmarked
 )
 from app.schemas.channel import ChannelCreate, ChannelResponse
 from app.core.dependencies import get_current_active_user
-from app.db.models import User, NewsArticle as NewsArticleModel
+from app.db.models import User, NewsArticle as NewsArticleModel, Bookmark as BookmarkModel, UserChannels
 from app.core.ai import generate_article_summary, generate_article_category
 from app.schemas.news import Bookmark, NewsArticle
 
@@ -377,6 +381,7 @@ def add_article_bookmark(
     Raises:
     - **401 Unauthorized**: When user is not authenticated
     - **404 Not Found**: When article is not found
+    - **400 Bad Request**: When article is already bookmarked
 
     Example response:
     ```json
@@ -388,7 +393,23 @@ def add_article_bookmark(
     }
     ```
     """
-    return add_bookmark(db, str(current_user.id), article_id)
+    # Check if article exists
+    article = db.query(NewsArticleModel).filter(NewsArticleModel.id == article_id).first()
+    if not article:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Article not found"
+        )
+    
+    # Check if already bookmarked
+    user_id_str = str(current_user.id)
+    if is_bookmarked(db, user_id_str, article_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Article already bookmarked"
+        )
+    
+    return add_bookmark(db, user_id_str, article_id)
 
 
 @router.delete(
@@ -412,9 +433,17 @@ def delete_article_bookmark(
     - **401 Unauthorized**: When user is not authenticated
     - **404 Not Found**: When bookmark is not found
     """
-    removed = remove_bookmark(db, str(current_user.id), article_id)
-    if not removed:
-        raise HTTPException(status_code=404, detail="Bookmark not found.")
+    # Check if article exists
+    article = db.query(NewsArticleModel).filter(NewsArticleModel.id == article_id).first()
+    if not article:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Article not found"
+        )
+    
+    # If bookmark doesn't exist, just return success (idempotent delete)
+    user_id_str = str(current_user.id)
+    removed = remove_bookmark(db, user_id_str, article_id)
     return
 
 

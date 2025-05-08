@@ -9,6 +9,8 @@ from app.db.crud import (authenticate_user, create_user, get_user_by_email,
                          get_user_by_username)
 from app.db.database import get_db
 from app.schemas.user import Token, UserCreate, UserResponse
+from app.core.dependencies import get_current_active_user
+from app.db.models import User
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -104,3 +106,14 @@ def login_for_access_token(
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """
+    Get current user information.
+    
+    Returns:
+        User information for the authenticated user
+    """
+    return current_user
