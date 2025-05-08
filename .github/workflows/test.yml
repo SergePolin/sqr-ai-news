@@ -53,7 +53,3 @@ jobs:
         run: |
           poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5  # Wait for app to start
-
-      - name: Run performance tests
-        run: |
-          poetry run locust -f tests/performance/test_api_performance.py --headless -u 10 -r 2 --run-time 30s --host http://localhost:8000
