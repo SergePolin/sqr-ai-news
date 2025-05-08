@@ -349,7 +349,21 @@ def main():
         else:
             channel_name = channel_name
 
-        if st.button("Add channel"):
+        st.markdown("""
+        <style>
+        .add-channel-button {
+            background-color: #4361EE; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Create a button using HTML
+        if st.markdown('<button class="add-channel-button">Add channel</button>', unsafe_allow_html=True):
             if channel_name:
                 add_channel(channel_name, st.session_state.token)
                 # Clear the suggested channel after adding
@@ -539,7 +553,7 @@ def main():
                                 (
                                     f"<span style='font-size:1.15rem; "
                                     f"font-weight:600; "
-                                    f"color:{article_text_color}'>"
+                                    # f"color:{article_text_color}'>"
                                     f"{title}"
                                     f"</span>"
                                 ),
@@ -562,7 +576,7 @@ def main():
                                 st.markdown(
                                     (
                                         f"<span style='color:"
-                                        f"{article_text_color}; "
+                                        # f"{article_text_color}; "
                                         f"font-size:0.95em;'>"
                                         f"Category: "
                                         f"<b>{article.get('category')}</b>"
