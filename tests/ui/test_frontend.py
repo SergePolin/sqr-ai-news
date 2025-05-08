@@ -9,7 +9,6 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 
 # Configure Chrome options for headless operation
@@ -466,10 +465,8 @@ def test_login_page_elements(driver):
     """Test login page elements."""
     # Navigate to the login page
     driver.get("http://localhost:8501/login")
-    
     # Wait for page to load
     time.sleep(2)
-    
     # Check for login form elements
     form_elements = try_multiple_selectors(
         driver,
@@ -479,5 +476,4 @@ def test_login_page_elements(driver):
             (By.XPATH, "//button[contains(., 'Login')]"),
         ]
     )
-    
     assert form_elements, "Login form elements not found"
