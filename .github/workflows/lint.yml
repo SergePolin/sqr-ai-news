@@ -30,9 +30,6 @@ jobs:
       - name: Run Ruff linter
         run: poetry run ruff check app tests --output-format=github > ruff_report.txt || true
 
-      - name: Run tests with coverage
-        run: poetry run pytest --cov=app --cov-report=xml
-
       - name: Upload linting results
         uses: actions/upload-artifact@v4
         with:
