@@ -37,17 +37,28 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
-    Intercept all validation errors and build a user‑friendly response.
+    Build a user‑friendly summary for every validation error we care about.
     """
+    err_map = {}
+
     for err in exc.errors():
-        # err['loc'] looks like ['body', 'password']
-        if err["loc"][-1] == "password" and err["type"] == "string_too_short":
-            return JSONResponse(
-                status_code=400,
-                content={"message": "Too short password"}
-            )
-    # fallback: if the error is not about the password
+        field = err["loc"][-1]
+
+        # 1) invalid e‑mail (any value_error on e‑mail field)
+        if field == "email":
+            err_map["email"] = "Invalid email address"
+
+        # 2) short password
+        elif field == "password" and err["type"] == "string_too_short":
+            err_map["password"] = "Too short password"
+
+    # If we recognised at least one specific problem – return them all
+    if err_map:
+        return JSONResponse(status_code=400, content={"message": err_map})
+
+    # Fallback – something else went wrong
     return JSONResponse(status_code=400, content={"message": "Invalid input"})
+
 
 # Configure CORS
 app.add_middleware(

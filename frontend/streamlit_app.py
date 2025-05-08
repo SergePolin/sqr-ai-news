@@ -278,11 +278,21 @@ def main():
                                     "Cannot connect to the authentication service. "
                                     "Make sure the backend is running."
                                 )
+                                        # ↙ API returned a validation / business error
+                                        else:
+                                            try:
+                                                data = response.json()
+                                                msg = data.get("message", response.text)
 
-                            # ↙ success
-                            elif response.status_code == 201:
-                                st.success("Registration successful! Please log in.")
+                                                # our API returns a dict {field: message}
+                                                if isinstance(msg, dict):
+                                                    for m in msg.values():         # show each message separately
+                                                        st.error(m)
+                                                else:
+                                                    st.error(f"Registration error: {msg}")
 
+                                            except ValueError:
+                                                st.error(f"Registration error: {response.text}")
                             # ↙ API returned a validation / business error
                             else:
                                 try:
