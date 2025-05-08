@@ -1,7 +1,8 @@
-from openai import AzureOpenAI
+import logging
 import os
 from typing import Optional
-import logging
+
+from openai import AzureOpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,9 +20,7 @@ AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_API_VERSION = os.environ.get(
     "AZURE_OPENAI_API_VERSION", "2025-01-01-preview"
 )
-AZURE_OPENAI_DEPLOYMENT = os.environ.get(
-    "AZURE_OPENAI_DEPLOYMENT", "gpt-4o"
-)
+AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
 
 # Regular OpenAI configuration (fallback)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -37,9 +36,9 @@ if AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT:
         client = AzureOpenAI(
             api_key=AZURE_OPENAI_KEY,
             api_version=AZURE_OPENAI_API_VERSION,
-            azure_endpoint=AZURE_OPENAI_ENDPOINT
+            azure_endpoint=AZURE_OPENAI_ENDPOINT,
         )
-        client_type = 'azure'
+        client_type = "azure"
         logger.info("Azure OpenAI client initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}")
@@ -51,14 +50,10 @@ else:
     )
 
 if client is None:
-    logger.warning(
-        "No OpenAI credentials provided. AI summarization will be disabled.")
+    logger.warning("No OpenAI credentials provided. AI summarization will be disabled.")
 
 
-def generate_article_summary(
-    content: str,
-    max_length: int = 200
-) -> Optional[str]:
+def generate_article_summary(content: str, max_length: int = 200) -> Optional[str]:
     """
     Generate a summary of an article using OpenAI.
 
@@ -70,8 +65,7 @@ def generate_article_summary(
         A summary of the article in English or None if summarization fails
     """
     if not client:
-        logger.warning(
-            "Cannot generate summary: OpenAI client not initialized")
+        logger.warning("Cannot generate summary: OpenAI client not initialized")
         return None
 
     if not content or len(content.strip()) < 50:
@@ -84,15 +78,13 @@ def generate_article_summary(
             "regardless of the original language of the article.\n"
             "Keep the summary informative and factual. Maximum length: "
             f"{max_length} characters.\n\n"
-
             "Article:\n"
             f"{content}\n\n"
-
             "Summary in English:"
         )
 
         # Different API calls based on client type
-        if client_type == 'azure':
+        if client_type == "azure":
             response = client.chat.completions.create(
                 model=AZURE_OPENAI_DEPLOYMENT,
                 messages=[
@@ -102,13 +94,13 @@ def generate_article_summary(
                             "You are a helpful assistant "
                             "that summarizes news articles in English, "
                             "regardless of the original language."
-                        )
+                        ),
                     },
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.5,
                 max_tokens=150,
-                top_p=1.0
+                top_p=1.0,
             )
         else:  # OpenAI
             response = client.chat.completions.create(
@@ -120,13 +112,13 @@ def generate_article_summary(
                             "You are a helpful assistant "
                             "that summarizes news articles in English, "
                             "regardless of the original language."
-                        )
+                        ),
                     },
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.5,
                 max_tokens=150,
-                top_p=1.0
+                top_p=1.0,
             )
 
         summary = response.choices[0].message.content.strip()
@@ -148,8 +140,7 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
         A category for the article in English or None if categorization fails
     """
     if not client:
-        logger.warning(
-            "Cannot generate category: OpenAI client not initialized")
+        logger.warning("Cannot generate category: OpenAI client not initialized")
         return None
 
     if not content or len(content.strip()) < 50:
@@ -158,9 +149,20 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
 
     try:
         categories = [
-            "Politics", "Business", "Technology", "Science", "Health",
-            "Entertainment", "Sports", "Environment", "Education",
-            "Travel", "Opinion", "Culture", "Economy", "International"
+            "Politics",
+            "Business",
+            "Technology",
+            "Science",
+            "Health",
+            "Entertainment",
+            "Sports",
+            "Environment",
+            "Education",
+            "Travel",
+            "Opinion",
+            "Culture",
+            "Economy",
+            "International",
         ]
 
         categories_str = ", ".join(categories)
@@ -169,17 +171,14 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
             "Categorize the following news article into ONE "
             f"of these categories: {categories_str}. "
             "Respond with just the category name in English, nothing else.\n\n"
-
             f"Title: {title}\n\n"
-
             "Article:\n"
             f"{content[:1000]}  # Using first 1000 chars for efficiency\n\n"
-
             "Category in English:"
         )
 
         # Different API calls based on client type
-        if client_type == 'azure':
+        if client_type == "azure":
             response = client.chat.completions.create(
                 model=AZURE_OPENAI_DEPLOYMENT,
                 messages=[
@@ -189,13 +188,13 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
                             "You are a helpful assistant "
                             "that categorizes news articles into English categories, "
                             "regardless of the original language."
-                        )
+                        ),
                     },
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.3,
                 max_tokens=20,
-                top_p=1.0
+                top_p=1.0,
             )
         else:  # OpenAI
             response = client.chat.completions.create(
@@ -207,13 +206,13 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
                             "You are a helpful assistant "
                             "that categorizes news articles into English categories, "
                             "regardless of the original language."
-                        )
+                        ),
                     },
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.3,
                 max_tokens=20,
-                top_p=1.0
+                top_p=1.0,
             )
 
         category = response.choices[0].message.content.strip()
@@ -234,8 +233,7 @@ def generate_article_category(content: str, title: str) -> Optional[str]:
                 return valid_category
 
         # Fallback to "Other" if no match
-        logger.warning(
-            f"Category '{category}' not in predefined list, using 'Other'")
+        logger.warning(f"Category '{category}' not in predefined list, using 'Other'")
         return "Other"
     except Exception as e:
         logger.error(f"Error generating article category: {str(e)}")

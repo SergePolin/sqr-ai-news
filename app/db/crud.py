@@ -1,11 +1,13 @@
-from sqlalchemy.orm import Session
 # from sqlalchemy import and_
-from typing import List, Optional, Dict, Any
-# from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from app.db.models import NewsArticle, UserChannels, User, Bookmark
+from sqlalchemy.orm import Session
+
 from app.core.security import get_password_hash, verify_password
+from app.db.models import Bookmark, NewsArticle, User, UserChannels
 from app.schemas.user import UserCreate
+
+# from datetime import datetime
 
 
 def get_articles(
@@ -13,11 +15,11 @@ def get_articles(
     skip: int = 0,
     limit: int = 100,
     source: Optional[str] = None,
-    category: Optional[str] = None
+    category: Optional[str] = None,
 ) -> List[NewsArticle]:
     """
     Get articles with optional filtering by source and category.
-    
+
     Returns articles sorted by published_date in descending order (newest first).
     """
     query = db.query(NewsArticle)
@@ -48,10 +50,7 @@ def get_article_by_url(db: Session, url: str) -> Optional[NewsArticle]:
     return db.query(NewsArticle).filter(NewsArticle.url == url).first()
 
 
-def create_or_update_article(
-    db: Session,
-    article_data: Dict[str, Any]
-) -> NewsArticle:
+def create_or_update_article(db: Session, article_data: Dict[str, Any]) -> NewsArticle:
     """
     Create a new article or update if it already exists (by URL).
 
@@ -63,15 +62,15 @@ def create_or_update_article(
         Created or updated NewsArticle object
     """
     # Check if article already exists
-    if 'url' not in article_data:
+    if "url" not in article_data:
         raise ValueError("Article data must contain URL")
 
-    existing_article = get_article_by_url(db, article_data['url'])
+    existing_article = get_article_by_url(db, article_data["url"])
 
     if existing_article:
         # Update existing article
         for key, value in article_data.items():
-            if hasattr(existing_article, key) and key != 'id':
+            if hasattr(existing_article, key) and key != "id":
                 setattr(existing_article, key, value)
 
         db.commit()
@@ -111,8 +110,7 @@ def get_channel(db: Session, channel_id: str):
 
 # Update - Обновление подписки
 def update_channel(db: Session, channel_id: str, new_channel_alias: str):
-    db_channel = db.query(UserChannels).filter(
-        UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
         db_channel.channel_alias = new_channel_alias
         db.commit()
@@ -122,8 +120,7 @@ def update_channel(db: Session, channel_id: str, new_channel_alias: str):
 
 # Delete - Удаление подписки
 def delete_channel(db: Session, channel_id: str):
-    db_channel = db.query(UserChannels).filter(
-        UserChannels.id == channel_id).first()
+    db_channel = db.query(UserChannels).filter(UserChannels.id == channel_id).first()
     if db_channel:
         db.delete(db_channel)
         db.commit()
@@ -131,6 +128,7 @@ def delete_channel(db: Session, channel_id: str):
 
 
 # User-related operations
+
 
 def get_user_by_username(db: Session, username: str) -> Optional[User]:
     """
@@ -152,9 +150,7 @@ def create_user(db: Session, user: UserCreate) -> User:
     """
     hashed_password = get_password_hash(user.password)
     db_user = User(
-        username=user.username,
-        email=user.email,
-        hashed_password=hashed_password
+        username=user.username, email=user.email, hashed_password=hashed_password
     )
     db.add(db_user)
     db.commit()
@@ -162,10 +158,7 @@ def create_user(db: Session, user: UserCreate) -> User:
     return db_user
 
 
-def authenticate_user(
-    db: Session,
-    username: str, password: str
-) -> Optional[User]:
+def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     """
     Authenticate a user by username and password.
     """
@@ -186,8 +179,9 @@ def add_bookmark(db: Session, user_id: str, article_id: int) -> Bookmark:
 
 
 def remove_bookmark(db: Session, user_id: str, article_id: int) -> bool:
-    bookmark = db.query(Bookmark).filter_by(
-        user_id=user_id, article_id=article_id).first()
+    bookmark = (
+        db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first()
+    )
     if bookmark:
         db.delete(bookmark)
         db.commit()
@@ -201,8 +195,6 @@ def get_user_bookmarks(db: Session, user_id: str) -> list[Bookmark]:
 
 def is_bookmarked(db: Session, user_id: str, article_id: int) -> bool:
     return (
-        db.query(Bookmark)
-        .filter_by(user_id=user_id, article_id=article_id)
-        .first()
+        db.query(Bookmark).filter_by(user_id=user_id, article_id=article_id).first()
         is not None
     )

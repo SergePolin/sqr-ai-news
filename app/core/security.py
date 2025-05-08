@@ -8,7 +8,9 @@ from passlib.context import CryptContext
 # Security configuration
 SECRET_KEY = os.environ.get("SECRET_KEY", "")
 if not SECRET_KEY:
-    raise ValueError("No SECRET_KEY environment variable set. Please set it for security.")
+    raise ValueError(
+        "No SECRET_KEY environment variable set. Please set it for security."
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

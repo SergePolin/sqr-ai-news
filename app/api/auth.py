@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_active_user
 from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from app.db.crud import (authenticate_user, create_user, get_user_by_email,
                          get_user_by_username)
 from app.db.database import get_db
-from app.schemas.user import Token, UserCreate, UserResponse
-from app.core.dependencies import get_current_active_user
 from app.db.models import User
+from app.schemas.user import Token, UserCreate, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -112,7 +112,7 @@ def login_for_access_token(
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     """
     Get current user information.
-    
+
     Returns:
         User information for the authenticated user
     """
