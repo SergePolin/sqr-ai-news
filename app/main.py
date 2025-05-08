@@ -5,9 +5,9 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request                           
-from fastapi.exceptions import RequestValidationError 
-from fastapi.responses import JSONResponse    
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 # Load environment variables from .env file
 if os.path.exists(".env"):
@@ -33,6 +33,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+
 # Exception Handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -44,7 +45,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         if err["loc"][-1] == "password" and err["type"] == "string_too_short":
             return JSONResponse(
                 status_code=400,
-                content={"message": "Too short password"}  
+                content={"message": "Too short password"}
             )
     # fallback: if the error is not about the password
     return JSONResponse(status_code=400, content={"message": "Invalid input"})
