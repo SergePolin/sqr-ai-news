@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from uuid import uuid4
@@ -8,13 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.db.crud import (
-    add_bookmark,
-    create_or_update_article,
-    get_user_by_username,
-    is_bookmarked,
-)
-from app.db.models import Bookmark, NewsArticle, User
+from app.db.crud import create_or_update_article, get_user_by_username, is_bookmarked
 from app.main import app
 
 # Set up detailed logging
