@@ -1,0 +1,55 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * 1" # Weekly on Mondays
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Start the API server in background
+        run: |
+          nohup poetry run python run.py &
+          echo $! > server.pid
+          sleep 5  # Wait for server to start
+
+      - name: Run performance tests
+        run: |
+          cd performance
+          poetry run python test_api_performance.py --headless
+        continue-on-error: true # Don't fail the build if performance thresholds are not met
+
+      - name: Kill the API server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+            rm server.pid
+          fi
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance/reports/
+          retention-days: 5

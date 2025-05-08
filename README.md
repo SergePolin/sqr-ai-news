@@ -320,6 +320,34 @@ make fix-lint
 
 The CI pipeline will automatically check for linting issues on every pull request.
 
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and delivery:
+
+### Quality Gates
+
+All pull requests must pass the following quality gates before merging:
+
+1. **Code Quality Checks**:
+   - Linting (Ruff)
+   - Test coverage ≥ 60%
+   - Security scan (Bandit)
+
+2. **Test Workflows**:
+   - Unit tests
+   - Integration tests
+   - API tests
+
+3. **Performance Testing** (Weekly on main branch):
+   - API response time checks
+   - Load testing with Locust
+
+4. **Security Monitoring** (Weekly on main branch):
+   - Dependency vulnerability scanning
+   - Code security scanning with Bandit
+
+All quality reports are uploaded as artifacts for easy inspection.
+
 Made with ❤️ by Bantiki 🎀 team
 
 ---
